@@ -49,22 +49,15 @@ npm run typecheck
 
 ### Interactive visualizers 🎬
 **Every** problem ships an HTML visualizer that **animates the algorithm** step by
-step — moving pointers, filling DP tables, flipping linked-list arrows, lighting
-up tree nodes — with a synced, line-highlighted code panel. Use ◀ / ▶ (or the
-arrow keys) and ▶ Play.
-
-![A single visualizer in action — Maximum Depth of Binary Tree](assets/visualizer-in-action.png)
+step, with a synced, line-highlighted code panel.
 
 ```bash
 open index.html                 # the menu of all visualizers
 ./run.sh -v edit-distance       # open one problem's visualizer directly
 ```
 
-They're plain HTML/JS (no build, no server) powered by the shared engine in
-[`viz/`](viz). Each one runs the *real* algorithm through a tiny recorder, so the
-animation always matches the logic. Renderers exist for arrays, bars, 2-D grids,
-linked lists, and trees — adding a visualizer to another problem is just a small
-`visualize.html`.
+See [**🎬 Interactive visualizers**](#-interactive-visualizers) below for what they
+show, the controls, the renderers, and how to add your own.
 
 ### Where to put your own `console.log`
 Each `solution.ts` ends with a demo block:
@@ -80,6 +73,79 @@ if (require.main === module) {
 The guard means you can also `import` the function elsewhere without the demo
 firing. Add logs anywhere — inside the function or this block — and re-run (or
 let `-w` do it for you).
+
+---
+
+## 🎬 Interactive visualizers
+
+All **56** problems ship a `visualize.html` that **animates the algorithm** —
+zero dependencies, no build step, no server (they open straight off the file
+system). Browse the gallery in [`index.html`](index.html), or jump to one with
+`./run.sh -v <name>`.
+
+![A single visualizer in action — Maximum Depth of Binary Tree](assets/visualizer-in-action.png)
+
+### What you're looking at
+- **Stage** (left) — the data structure at the current step: array cells, bars, a
+  2-D table, a linked list, or a tree. Pointers, highlights, and the "active" cell
+  update as you move through the run.
+- **Code panel** (right) — the solution with the **currently executing line
+  highlighted**, so you can map state ↔ code at a glance.
+- **Caption** — one plain-English sentence describing the current step.
+- **Chips** — auxiliary state that doesn't live in the main view (a running
+  `best`, a hash map, a heap, a carry, the `low/high` bounds…).
+
+### Controls
+| Action | Button | Keyboard |
+|--------|--------|----------|
+| Step forward / back | `Next ▶` / `◀ Prev` | `→` / `←` |
+| Play / pause | `▶ Play` | `space` |
+| Restart | `⏮ Reset` | — |
+| Speed | the slow ↔ fast slider | — |
+
+### Renderers — and which problems use them
+The engine ships five renderers; each problem picks whichever fits its data:
+
+| Renderer | Looks like | Example problems |
+|----------|-----------|------------------|
+| **array** | a row of indexed cells with labelled pointer arrows + highlights | Two Sum, 3Sum, Binary Search, sliding windows, 1-D DP |
+| **bars** | a bar chart of heights (with a shaded region) | Container With Most Water, Koko Eating Bananas |
+| **grid** | a 2-D table that fills in cell by cell | Edit Distance, LCS, Unique Paths, Number of Islands, Word Search |
+| **list** | linked-list nodes + arrows (reversed-pointer & cycle aware) | Reverse List, Linked List Cycle, LRU Cache |
+| **tree** | an auto-laid-out binary / recursion tree | Invert Tree, Validate BST, Trie, Kth Smallest |
+
+### How it works — and how to add one
+Each `visualize.html` runs the **real algorithm** through a tiny *recorder*, so
+the animation can never drift from the logic. You feed `Viz.create` the code to
+display and a `build(rec)` that calls `rec.step(...)` at each interesting moment:
+
+```html
+<link rel="stylesheet" href="../../viz/viz.css">
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Two Sum",
+  subtitle: "#1 · Easy · one-pass hash map",
+  url: "https://leetcode.com/problems/two-sum/",
+  code: ["function twoSum(nums, target) {", "  // ...", "}"],  // shown line-by-line
+  build(rec) {
+    // run the algorithm; record a frame at each step:
+    rec.step({
+      line: 4,                         // 1-based line in `code` to highlight
+      note: "need 9 − 2 = 7",          // caption
+      aux: { seen: "{2:0}" },          // chips
+      type: "array",                    // renderer + its fields:
+      values: [2, 7, 11, 15], pointers: { i: 0 }, hi: [0],
+    });
+  },
+});
+</script>
+```
+
+Frames are plain JSON (the engine deep-clones each one), so stepping the algorithm
+builds up the whole replay. The gallery is regenerated from every `visualize.html`
+by `node viz/gen-index.mjs`. The whole engine is ~300 lines of dependency-free
+vanilla JS in [`viz/viz.js`](viz/viz.js) + [`viz/viz.css`](viz/viz.css).
 
 ---
 
