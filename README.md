@@ -7,14 +7,17 @@ problems (based on the [Blind 75](https://neetcode.io/practice/practice/blind75)
 **TypeScript** and organized **by data structure / technique**.
 
 **56 problems** spanning Easy → Hard across 14 categories — every one
-type-checked and runnable.
+type-checked, runnable, and paired with an **interactive visualizer**.
 
-Every problem lives in its own folder with two files:
+![Gallery of all 56 interactive visualizers](assets/visualizers-gallery.png)
+
+Every problem lives in its own folder with three files:
 
 | File | Purpose |
 |------|---------|
 | `solution.ts` | A typed, **runnable** solution with a small demo at the bottom. |
 | `README.md`   | The **idea**, a step-by-step walkthrough, an ASCII visual, and **time/space complexity**. |
+| `visualize.html` | An **interactive, animated** walkthrough (open [`index.html`](index.html) or `./run.sh -v <name>`). |
 
 ---
 
@@ -45,10 +48,12 @@ npm run typecheck
 ```
 
 ### Interactive visualizers 🎬
-Some problems ship an HTML visualizer that **animates the algorithm** step by
+**Every** problem ships an HTML visualizer that **animates the algorithm** step by
 step — moving pointers, filling DP tables, flipping linked-list arrows, lighting
 up tree nodes — with a synced, line-highlighted code panel. Use ◀ / ▶ (or the
 arrow keys) and ▶ Play.
+
+![A single visualizer in action — Maximum Depth of Binary Tree](assets/visualizer-in-action.png)
 
 ```bash
 open index.html                 # the menu of all visualizers
