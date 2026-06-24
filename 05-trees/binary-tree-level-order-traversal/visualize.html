@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Binary Tree Level Order Traversal — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Binary Tree Level Order Traversal",
+  subtitle: "#102 · Medium · BFS, one level (frontier) at a time",
+  url: "https://leetcode.com/problems/binary-tree-level-order-traversal/",
+  code: [
+    "function levelOrder(root) {",
+    "  const result = [];",
+    "  if (root === null) return result;",
+    "  let frontier = [root];",
+    "  while (frontier.length > 0) {",
+    "    result.push(frontier.map(n => n.val));",
+    "    const next = [];",
+    "    for (const node of frontier) {",
+    "      if (node.left) next.push(node.left);",
+    "      if (node.right) next.push(node.right);",
+    "    }",
+    "    frontier = next;",
+    "  }",
+    "  return result;",
+    "}"
+  ],
+  build: function (rec) {
+    var N = function (v, l, r) { return { v: v, l: l || null, r: r || null }; };
+    // [3,9,20,null,null,15,7]
+    var root = N(3, N(9), N(20, N(15), N(7)));
+    var visited = {};
+    function snapshot(line, note, frontier, result) {
+      var inFrontier = {};
+      (frontier || []).forEach(function (n) { inFrontier[n.v] = true; });
+      var mk = function (n) {
+        if (!n) return null;
+        var state = null;
+        if (inFrontier[n.v]) state = "instack";
+        else if (visited[n.v]) state = "visited";
+        return { label: n.v, state: state, children: [mk(n.l), mk(n.r)] };
+      };
+      rec.step({ line: line, type: "tree", root: mk(root), note: note, aux: { levels: JSON.stringify(result) } });
+    }
+    var result = [];
+    snapshot(2, "BFS visits nodes nearest the root first. We process the tree one frontier (level) at a time, collecting their values.", [], result);
+
+    var frontier = [root];
+    snapshot(4, "Seed the frontier with just the root [" + root.v + "]. The current level is highlighted.", frontier, result);
+
+    while (frontier.length > 0) {
+      var vals = frontier.map(function (n) { return n.v; });
+      result.push(vals);
+      snapshot(6, "Snapshot this whole level: push [" + vals.join(", ") + "] into result.", frontier, result);
+
+      var next = [];
+      for (var i = 0; i < frontier.length; i++) {
+        var node = frontier[i];
+        if (node.l) next.push(node.l);
+        if (node.r) next.push(node.r);
+      }
+      snapshot(8, "Gather the children of [" + vals.join(", ") + "] to form the next frontier" +
+        (next.length ? ": [" + next.map(function (n) { return n.v; }).join(", ") + "]." : " (none — leaves)."), frontier, result);
+
+      // mark this level done
+      frontier.forEach(function (n) { visited[n.v] = true; });
+      frontier = next;
+      snapshot(12, frontier.length
+        ? "Advance: the children become the new frontier. Loop again."
+        : "New frontier is empty — the while loop will now exit.", frontier, result);
+    }
+    snapshot(15, "All levels collected. Return result = " + JSON.stringify(result) + ".", [], result);
+  }
+});
+</script>
+</body>
+</html>

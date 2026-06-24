@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Combination Sum — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Combination Sum",
+  subtitle: "#39 · Medium · Backtracking with reuse — recurse on the same index, prune when remaining < 0",
+  url: "https://leetcode.com/problems/combination-sum/",
+  code: [
+    "function combinationSum(candidates, target) {",
+    "  const result = [];",
+    "  const current = [];",
+    "  const backtrack = (start, remaining) => {",
+    "    if (remaining === 0) {",
+    "      result.push([...current]);   // exact hit",
+    "      return;",
+    "    }",
+    "    if (remaining < 0) return;     // overshot -> prune",
+    "    for (let i = start; i < candidates.length; i++) {",
+    "      current.push(candidates[i]);",
+    "      backtrack(i, remaining - candidates[i]); // i -> reuse",
+    "      current.pop();",
+    "    }",
+    "  };",
+    "  backtrack(0, target);",
+    "  return result;",
+    "}"
+  ],
+  build: function (rec) {
+    var candidates = [2, 3, 6, 7], target = 7;
+    var current = [];
+    var results = [];
+
+    var resultsText = function () {
+      return "[" + results.map(function (s) { return "[" + s.join(",") + "]"; }).join(", ") + "]";
+    };
+    var idxs = function () { return current.map(function (_, k) { return k; }); };
+
+    rec.step({
+      line: 4, type: "array", values: current.slice(), pointers: {}, hi: [],
+      note: "candidates = [2,3,6,7], target = 7. Grow `current`; track how much is still `remaining`. Each candidate may be reused, so the recursion uses the SAME index i (not i+1).",
+      aux: { remaining: target, results: resultsText() }
+    });
+
+    var backtrack = function (start, remaining) {
+      if (remaining === 0) {
+        results.push(current.slice());
+        rec.step({
+          line: 6, type: "array", values: current.slice(), hi: idxs(),
+          note: "remaining == 0 → exact hit! Record combination [" + current.join(",") + "] (sums to " + target + ").",
+          aux: { remaining: 0, results: resultsText() }
+        });
+        return;
+      }
+
+      var overshoot = [];
+      for (var i = start; i < candidates.length; i++) {
+        var nextRem = remaining - candidates[i];
+        if (nextRem < 0) {
+          // pushing candidates[i] would overshoot; the real code pushes, recurses,
+          // hits `remaining < 0` and prunes. Collect these to show as one prune step.
+          overshoot.push(candidates[i]);
+          continue;
+        }
+
+        // choose candidates[i]
+        current.push(candidates[i]);
+        var ptr = {};
+        ptr["+" + candidates[i]] = current.length - 1;
+        rec.step({
+          line: 11, type: "array", values: current.slice(),
+          pointers: ptr, hi: [current.length - 1],
+          note: "Try candidates[" + i + "] = " + candidates[i] + " → push. current = [" + current.join(",") + "]. remaining becomes " + nextRem + ". (Recurse from index " + i + " — reuse is allowed.)",
+          aux: { remaining: nextRem, results: resultsText() }
+        });
+
+        // recurse with i (NOT i+1) so candidates[i] can be reused
+        backtrack(i, nextRem);
+
+        // un-choose
+        var removed = current[current.length - 1];
+        current.pop();
+        rec.step({
+          line: 13, type: "array", values: current.slice(), dim: idxs(),
+          note: "Un-choose " + removed + " → pop (backtrack). current = [" + current.join(",") + "]. Continue with the next candidate ≥ index " + i + ".",
+          aux: { remaining: remaining, results: resultsText() }
+        });
+      }
+
+      if (overshoot.length) {
+        rec.step({
+          line: 9, type: "array", values: current.slice(), dim: idxs(),
+          note: "From [" + current.join(",") + "] (remaining = " + remaining + "), candidate(s) " + overshoot.join(", ") + " each push past 0 → remaining < 0, so those branches prune immediately.",
+          aux: { remaining: remaining, results: resultsText() }
+        });
+      }
+    };
+
+    backtrack(0, target);
+
+    rec.step({
+      line: 18, type: "array", values: current.slice(), pointers: {}, hi: [],
+      note: "Done. Combinations summing to " + target + ": " + resultsText() + ".",
+      aux: { remaining: target, results: resultsText() }
+    });
+  }
+});
+</script>
+</body>
+</html>

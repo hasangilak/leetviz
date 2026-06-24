@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Word Break — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Word Break",
+  subtitle: "#139 · Medium · DP over prefixes — can s be split into dict words?",
+  url: "https://leetcode.com/problems/word-break/",
+  code: [
+    "function wordBreak(s, wordDict) {",
+    "  const words = new Set(wordDict);",
+    "  const dp = new Array(s.length + 1).fill(false);",
+    "  dp[0] = true;",
+    "  for (let i = 1; i <= s.length; i++) {",
+    "    for (let j = 0; j < i; j++) {",
+    "      if (dp[j] && words.has(s.slice(j, i))) {",
+    "        dp[i] = true;",
+    "        break;",
+    "      }",
+    "    }",
+    "  }",
+    "  return dp[s.length];",
+    "}"
+  ],
+  build: function (rec) {
+    var s = "leetcode";
+    var words = ["leet", "code"];
+    var wordSet = { leet: true, code: true };
+    var n = s.length;
+    var chars = s.split("");
+    var dp = []; for (var k = 0; k <= n; k++) dp.push(false);
+    dp[0] = true;
+
+    var dpStr = function () { return "[" + dp.map(function (b) { return b ? "T" : "F"; }).join(",") + "]"; };
+    // highlight chars covered by the substring s[j..i)
+    var range = function (a, b) { var r = []; for (var k = a; k < b; k++) r.push(k); return r; };
+
+    rec.step({
+      line: 4, type: "array", values: chars,
+      note: "dp[i] = can the first i characters s[0..i) be segmented into dictionary words {leet, code}? Base: dp[0] = true (empty prefix). The cells below are the characters of \"" + s + "\".",
+      aux: { dp: dpStr() }
+    });
+
+    for (var i = 1; i <= n; i++) {
+      var found = false;
+      for (var j = 0; j < i; j++) {
+        // The real candidates are split points where dp[j] is already true;
+        // dp[j] === false short-circuits the check, so we surface only the live ones.
+        if (!dp[j]) continue;
+        var sub = s.slice(j, i);
+        var isWord = wordSet[sub] === true;
+        var hit = isWord; // dp[j] is true here
+        rec.step({
+          line: 7, type: "array", values: chars,
+          pointers: i < n ? { i: i, j: j } : { j: j },
+          hi: range(j, i),
+          dim: j > 0 ? range(0, j) : [],
+          note: "i=" + i + ", j=" + j + ": dp[" + j + "]=T (prefix \"" + s.slice(0, j) + "\" is segmentable). Is the next chunk \"" + sub + "\" a dictionary word? " + (isWord ? "yes → split works!" : "no → keep scanning."),
+          aux: { dp: dpStr(), checking: "s[" + j + ".." + i + ") = \"" + sub + "\"" }
+        });
+        if (hit) {
+          dp[i] = true; found = true;
+          rec.step({
+            line: 8, type: "array", values: chars,
+            pointers: i < n ? { i: i } : {},
+            hi: range(0, i),
+            note: "dp[" + j + "] true AND \"" + sub + "\" ∈ dict → mark dp[" + i + "] = true. The whole prefix s[0.." + i + ") = \"" + s.slice(0, i) + "\" is segmentable. Stop scanning j.",
+            aux: { dp: dpStr(), checking: "split at j=" + j }
+          });
+          break;
+        }
+      }
+      if (!found) {
+        rec.step({
+          line: 6, type: "array", values: chars,
+          pointers: i < n ? { i: i } : {},
+          hi: range(0, i),
+          note: "No live split point made dp[" + i + "] true → it stays false (prefix \"" + s.slice(0, i) + "\" is not yet segmentable).",
+          aux: { dp: dpStr() }
+        });
+      }
+    }
+
+    rec.step({
+      line: 13, type: "array", values: chars, hi: range(0, n),
+      note: "Answer = dp[" + n + "] = " + (dp[n] ? "true" : "false") + ". \"" + s + "\" splits as \"leet\" + \"code\".",
+      aux: { answer: dp[n] ? "true" : "false", dp: dpStr() }
+    });
+  }
+});
+</script>
+</body>
+</html>

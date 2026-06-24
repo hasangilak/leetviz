@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reverse Linked List — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Reverse Linked List",
+  subtitle: "#206 · Easy · flip each .next pointer with three references",
+  url: "https://leetcode.com/problems/reverse-linked-list/",
+  code: [
+    "function reverseList(head) {",
+    "  let prev = null, curr = head;",
+    "  while (curr) {",
+    "    const next = curr.next;",
+    "    curr.next = prev;",
+    "    prev = curr;",
+    "    curr = next;",
+    "  }",
+    "  return prev;",
+    "}"
+  ],
+  build: function (rec) {
+    var vals = [1, 2, 3, 4, 5];
+    var nodes = vals.map(function (v, i) { return { id: i, val: v }; });
+    var next = {};
+    nodes.forEach(function (n, i) { next[n.id] = i + 1 < nodes.length ? i + 1 : null; });
+    var arrows = function () { return nodes.map(function (n) { return { from: n.id, to: next[n.id] }; }); };
+    var label = function (id) { return id == null ? "null" : String(vals[id]); };
+    var prev = null, curr = 0;
+    rec.step({ line: 2, type: "list", nodes: nodes, arrows: arrows(), pointers: { prev: prev, curr: curr }, note: "prev = null, curr = head (1). Arrows point forward." });
+    while (curr !== null) {
+      var nxt = next[curr];
+      rec.step({ line: 4, type: "list", nodes: nodes, arrows: arrows(), pointers: { prev: prev, curr: curr, next: nxt }, note: "Save next = " + label(nxt) + " BEFORE we overwrite curr.next (or we'd lose the rest of the list)." });
+      next[curr] = prev;
+      rec.step({ line: 5, type: "list", nodes: nodes, arrows: arrows(), pointers: { prev: prev, curr: curr, next: nxt }, note: "Flip it: " + label(curr) + ".next now points back to " + label(prev) + "." });
+      prev = curr; curr = nxt;
+      rec.step({ line: 6, type: "list", nodes: nodes, arrows: arrows(), pointers: { prev: prev, curr: curr }, note: "Advance both: prev = " + label(prev) + ", curr = " + label(curr) + "." });
+    }
+    rec.step({ line: 9, type: "list", nodes: nodes, arrows: arrows(), pointers: { head: prev }, note: "curr is null, so we're done. New head = " + label(prev) + " — the list is reversed." });
+  }
+});
+</script>
+</body>
+</html>

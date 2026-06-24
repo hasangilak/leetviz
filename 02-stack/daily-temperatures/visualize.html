@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Temperatures — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Daily Temperatures",
+  subtitle: "#739 · Medium · monotonic stack of waiting days, resolved by a warmer day",
+  url: "https://leetcode.com/problems/daily-temperatures/",
+  code: [
+    "function dailyTemperatures(t) {",
+    "  const answer = new Array(t.length).fill(0);",
+    "  const stack = [];                 // indices, temps decreasing",
+    "  for (let day = 0; day < t.length; day++) {",
+    "    while (stack.length &&",
+    "           t[day] > t[stack.at(-1)]) {",
+    "      const cold = stack.pop();",
+    "      answer[cold] = day - cold;",
+    "    }",
+    "    stack.push(day);",
+    "  }",
+    "  return answer;",
+    "}"
+  ],
+  build: function (rec) {
+    var t = [73, 74, 75, 71, 69, 72, 76, 73];
+    var n = t.length;
+    var answer = []; for (var k = 0; k < n; k++) answer.push(0);
+    var stack = [];
+    var showStack = function () { return stack.length ? "[ " + stack.join(" ") + "  ←top" : "(empty)"; };
+    var showAns = function () { return "[" + answer.join(", ") + "]"; };
+
+    rec.step({
+      line: 3, type: "array", values: t, pointers: {},
+      note: "answer all 0. The stack holds day-indices still WAITING for a warmer day (their temps strictly decrease bottom→top).",
+      aux: { stack: showStack(), answer: showAns() }
+    });
+
+    for (var day = 0; day < n; day++) {
+      rec.step({
+        line: 4, type: "array", values: t, pointers: { day: day }, hi: [day],
+        dim: stack.slice(),
+        note: "Day " + day + " (temp " + t[day] + "). Can it resolve any waiting days on the stack? (dimmed cells are waiting.)",
+        aux: { stack: showStack(), answer: showAns() }
+      });
+      while (stack.length > 0 && t[day] > t[stack[stack.length - 1]]) {
+        var cold = stack.pop();
+        answer[cold] = day - cold;
+        rec.step({
+          line: 7, type: "array", values: t, pointers: { day: day, cold: cold }, hi: [cold, day],
+          dim: stack.slice(),
+          note: "Day " + day + " (" + t[day] + ") is warmer than waiting day " + cold + " (" + t[cold] + ") → resolve it: answer[" + cold + "] = " + day + " − " + cold + " = " + (day - cold) + ".",
+          aux: { stack: showStack(), answer: showAns(), filled: "answer[" + cold + "] = " + (day - cold) }
+        });
+      }
+      stack.push(day);
+      rec.step({
+        line: 9, type: "array", values: t, pointers: { day: day }, hi: [day],
+        dim: stack.slice(0, -1),
+        note: "Nothing warmer to resolve now → push day " + day + " onto the stack to wait for its own warmer day.",
+        aux: { stack: showStack(), answer: showAns() }
+      });
+    }
+
+    rec.step({
+      line: 11, type: "array", values: t, pointers: {},
+      dim: stack.slice(),
+      note: "Done. Indices still on the stack (dimmed) never saw a warmer day, so they keep their default 0.",
+      aux: { stack: showStack(), answer: showAns() }
+    });
+  }
+});
+</script>
+</body>
+</html>

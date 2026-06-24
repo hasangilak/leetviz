@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Longest Increasing Subsequence — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Longest Increasing Subsequence",
+  subtitle: "#300 · Medium · O(n²) DP — dp[i] = longest run ending at i",
+  url: "https://leetcode.com/problems/longest-increasing-subsequence/",
+  code: [
+    "function lengthOfLIS(nums) {",
+    "  const dp = new Array(nums.length).fill(1);",
+    "  let best = 1;",
+    "  for (let i = 1; i < nums.length; i++) {",
+    "    for (let j = 0; j < i; j++) {",
+    "      if (nums[j] < nums[i] && dp[j] + 1 > dp[i])",
+    "        dp[i] = dp[j] + 1;",
+    "    }",
+    "    best = Math.max(best, dp[i]);",
+    "  }",
+    "  return best;",
+    "}"
+  ],
+  build: function (rec) {
+    var nums = [10, 9, 2, 5, 3, 7, 101, 18];
+    var n = nums.length;
+    var dp = []; for (var k = 0; k < n; k++) dp.push(1);
+    var best = 1;
+    var cL = []; for (var c = 0; c < n; c++) cL.push(c);
+
+    var grid = function () { return [nums.slice(), dp.slice()]; };
+
+    rec.step({
+      line: 2, type: "grid", data: grid(), rLabels: ["nums", "dp"], cLabels: cL, corner: "i",
+      note: "dp[i] = length of the longest strictly increasing subsequence that ENDS at index i. Every element alone is a run of length 1, so dp starts all 1s.",
+      aux: { best: best }
+    });
+
+    for (var i = 1; i < n; i++) {
+      var extended = 0; // count of earlier elements that grew dp[i]
+      for (var j = 0; j < i; j++) {
+        var extends_ = nums[j] < nums[i];
+        var improves = dp[j] + 1 > dp[i];
+        // Surface only the j's that actually grow the run (the meaningful work).
+        if (extends_ && improves) {
+          dp[i] = dp[j] + 1;
+          extended++;
+          rec.step({
+            line: 7, type: "grid", data: grid(),
+            rLabels: ["nums", "dp"], cLabels: cL, corner: "i",
+            cur: { r: 1, c: i },
+            hi: [{ r: 0, c: j }, { r: 1, c: j }],
+            note: "nums[" + j + "]=" + nums[j] + " < nums[" + i + "]=" + nums[i] + ", so " + nums[i] + " can extend the run ending at " + j + " (length dp[" + j + "]=" + dp[j] + "). dp[" + i + "] grows to " + dp[i] + ".",
+            aux: { i: i, j: j, "dp[i]": dp[i], best: Math.max(best, dp[i]) }
+          });
+        }
+      }
+      best = Math.max(best, dp[i]);
+      rec.step({
+        line: 9, type: "grid", data: grid(), rLabels: ["nums", "dp"], cLabels: cL, corner: "i",
+        cur: { r: 1, c: i },
+        note: extended === 0
+          ? ("Scanned every j < " + i + ": no earlier element is smaller than nums[" + i + "]=" + nums[i] + ", so dp[" + i + "] stays 1. Running best = " + best + ".")
+          : ("Finished scanning j < " + i + ". dp[" + i + "] settles at " + dp[i] + ". Running best = " + best + "."),
+        aux: { i: i, "dp[i]": dp[i], best: best }
+      });
+    }
+
+    rec.step({
+      line: 11, type: "grid", data: grid(), rLabels: ["nums", "dp"], cLabels: cL, corner: "i",
+      note: "Answer = max(dp) = " + best + " (the subsequence [2, 3, 7, 101] has length 4).",
+      aux: { answer: best }
+    });
+  }
+});
+</script>
+</body>
+</html>

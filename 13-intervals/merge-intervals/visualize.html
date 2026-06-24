@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Merge Intervals — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Merge Intervals",
+  subtitle: "#56 · Medium · sort by start, then sweep and merge adjacent overlaps",
+  url: "https://leetcode.com/problems/merge-intervals/",
+  code: [
+    "function merge(intervals) {",
+    "  intervals.sort((a, b) => a[0] - b[0]);",
+    "  const merged = [];",
+    "  for (const [start, end] of intervals) {",
+    "    const last = merged[merged.length - 1];",
+    "    if (last !== undefined && start <= last[1]) {",
+    "      last[1] = Math.max(last[1], end);   // overlap -> extend",
+    "    } else {",
+    "      merged.push([start, end]);          // disjoint -> new",
+    "    }",
+    "  }",
+    "  return merged;",
+    "}"
+  ],
+  build: function (rec) {
+    var intervals = [[1, 3], [2, 6], [8, 10], [15, 18]];
+    var fmt = function (iv) { return "[" + iv[0] + "," + iv[1] + "]"; };
+    var cells = function () { return intervals.map(fmt); };
+    var auxOf = function (merged) {
+      return { result: merged.length ? merged.map(fmt).join(" ") : "[]" };
+    };
+
+    var merged = [];
+
+    rec.step({
+      line: 1, type: "array", values: cells(), pointers: {},
+      note: "Input is already sorted by start, so overlapping intervals are adjacent. We sweep left to right keeping the last merged interval.",
+      aux: auxOf(merged)
+    });
+
+    for (var idx = 0; idx < intervals.length; idx++) {
+      var start = intervals[idx][0], end = intervals[idx][1];
+      var last = merged.length ? merged[merged.length - 1] : undefined;
+
+      rec.step({
+        line: 4, type: "array", values: cells(), pointers: { cur: idx }, hi: [idx],
+        note: "Consider interval " + fmt([start, end]) + ". last merged = " + (last ? fmt(last) : "none") + ".",
+        aux: auxOf(merged)
+      });
+
+      if (last !== undefined && start <= last[1]) {
+        var prevEnd = last[1];
+        last[1] = Math.max(last[1], end);
+        rec.step({
+          line: 6, type: "array", values: cells(), pointers: { cur: idx }, hi: [idx],
+          note: "start " + start + " <= last end " + prevEnd + " → overlap. Extend last to " + fmt(last) + ".",
+          aux: auxOf(merged)
+        });
+      } else {
+        merged.push([start, end]);
+        rec.step({
+          line: 8, type: "array", values: cells(), pointers: { cur: idx }, hi: [idx],
+          note: "No overlap with the last merged interval → push " + fmt([start, end]) + " as a fresh interval.",
+          aux: auxOf(merged)
+        });
+      }
+    }
+
+    rec.step({
+      line: 11, type: "array", values: cells(), pointers: {},
+      note: "Sweep complete → return the merged result.",
+      aux: auxOf(merged)
+    });
+  }
+});
+</script>
+</body>
+</html>

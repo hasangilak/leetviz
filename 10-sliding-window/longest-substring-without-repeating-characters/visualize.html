@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Longest Substring Without Repeating Characters — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Longest Substring Without Repeating Characters",
+  subtitle: "#3 · Medium · sliding window + last-seen index map",
+  url: "https://leetcode.com/problems/longest-substring-without-repeating-characters/",
+  code: [
+    "function lengthOfLongestSubstring(s) {",
+    "  const lastSeen = new Map();",
+    "  let start = 0, best = 0;",
+    "  for (let i = 0; i < s.length; i++) {",
+    "    const ch = s[i];",
+    "    const prev = lastSeen.get(ch);",
+    "    if (prev !== undefined && prev >= start) {",
+    "      start = prev + 1;",
+    "    }",
+    "    lastSeen.set(ch, i);",
+    "    best = Math.max(best, i - start + 1);",
+    "  }",
+    "  return best;",
+    "}"
+  ],
+  build: function (rec) {
+    var s = "pwwkew".split("");
+    var lastSeen = {};
+    var start = 0, best = 0;
+    var seenStr = function () {
+      var parts = [];
+      Object.keys(lastSeen).forEach(function (k) { parts.push(k + ":" + lastSeen[k]); });
+      return parts.length ? parts.join(" ") : "(empty)";
+    };
+    rec.step({ line: 3, type: "array", values: s, pointers: { start: 0, i: 0 }, window: [0, 0], note: "Window [start, i] always holds distinct chars. Slide i right; jump start past any repeat inside the window.", aux: { best: best, lastSeen: seenStr() } });
+    for (var i = 0; i < s.length; i++) {
+      var ch = s[i];
+      var prev = lastSeen.hasOwnProperty(ch) ? lastSeen[ch] : undefined;
+      rec.step({ line: 4, type: "array", values: s, pointers: { start: start, i: i }, hi: [i], window: [start, i], note: "Extend to i = " + i + " (char '" + ch + "'). Previous index of '" + ch + "': " + (prev === undefined ? "none" : prev) + ".", aux: { best: best, lastSeen: seenStr() } });
+      if (prev !== undefined && prev >= start) {
+        rec.step({ line: 7, type: "array", values: s, pointers: { start: start, i: i }, hi: [prev, i], window: [start, i], note: "'" + ch + "' last seen at " + prev + ", which is inside the window — jump start to " + (prev + 1) + " to evict the duplicate.", aux: { best: best, lastSeen: seenStr() } });
+        start = prev + 1;
+      }
+      lastSeen[ch] = i;
+      best = Math.max(best, i - start + 1);
+      rec.step({ line: 10, type: "array", values: s, pointers: { start: start, i: i }, window: [start, i], note: "Record '" + ch + "'@" + i + ". Current window length " + (i - start + 1) + " → best = " + best + ".", aux: { best: best, lastSeen: seenStr() } });
+    }
+    rec.step({ line: 12, type: "array", values: s, pointers: {}, note: "Longest substring without repeating characters has length " + best + ".", aux: { best: best, lastSeen: seenStr() } });
+  }
+});
+</script>
+</body>
+</html>

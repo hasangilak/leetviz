@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Longest Consecutive Sequence — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Longest Consecutive Sequence",
+  subtitle: "#128 · Medium · hash set, only count runs from their start",
+  url: "https://leetcode.com/problems/longest-consecutive-sequence/",
+  code: [
+    "function longestConsecutive(nums) {",
+    "  const set = new Set(nums);",
+    "  let best = 0;",
+    "  for (const n of set) {",
+    "    if (set.has(n - 1)) continue;     // n is not a start",
+    "    let length = 1;",
+    "    while (set.has(n + length)) length++;",
+    "    best = Math.max(best, length);",
+    "  }",
+    "  return best;",
+    "}"
+  ],
+  build: function (rec) {
+    var nums = [100, 4, 200, 1, 3, 2];
+    var setArr = nums.slice();               // iteration order of a Set built from an array
+    var has = {};
+    nums.forEach(function (x) { has[x] = true; });
+    var setStr = "{" + nums.join(", ") + "}";
+    var indexOf = function (val) { return nums.indexOf(val); };
+    var best = 0;
+
+    rec.step({ line: 2, type: "array", values: nums, pointers: {}, note: "Put every value in a set for O(1) lookups. We only start counting a run at its smallest element.", aux: { set: setStr, best: best } });
+    for (var s = 0; s < setArr.length; s++) {
+      var n = setArr[s];
+      var ni = indexOf(n);
+      if (has[n - 1]) {
+        rec.step({ line: 5, type: "array", values: nums, pointers: { n: ni }, hi: [ni], dim: [ni], note: n + " has a left neighbour " + (n - 1) + " in the set → it is NOT a run start, skip it.", aux: { set: setStr, best: best } });
+        continue;
+      }
+      var length = 1;
+      var streak = [ni];
+      rec.step({ line: 6, type: "array", values: nums, pointers: { n: ni }, hi: streak.slice(), note: n + " has no left neighbour (" + (n - 1) + " absent) → it starts a run. length = 1.", aux: { set: setStr, length: length, best: best } });
+      while (has[n + length]) {
+        length++;
+        var idx = indexOf(n + length - 1);
+        streak.push(idx);
+        rec.step({ line: 7, type: "array", values: nums, pointers: { n: ni }, hi: streak.slice(), note: (n + length - 1) + " is in the set → extend the streak from " + n + ". length = " + length + ".", aux: { set: setStr, streak: "[" + streak.map(function (k) { return nums[k]; }).join(",") + "]", length: length, best: best } });
+      }
+      best = Math.max(best, length);
+      rec.step({ line: 8, type: "array", values: nums, pointers: { n: ni }, hi: streak.slice(), note: "Run from " + n + " has length " + length + ". best = max(best, " + length + ") = " + best + ".", aux: { set: setStr, length: length, best: best } });
+    }
+    rec.step({ line: 10, type: "array", values: nums, pointers: {}, note: "Every start checked → longest consecutive run has length " + best + " (the streak 1,2,3,4).", aux: { answer: best } });
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Invert Binary Tree — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Invert Binary Tree",
+  subtitle: "#226 · Easy · recursive DFS, swap every node's two children",
+  url: "https://leetcode.com/problems/invert-binary-tree/",
+  code: [
+    "function invertTree(root) {",
+    "  if (root === null) return null;",
+    "  const left = invertTree(root.left);",
+    "  const right = invertTree(root.right);",
+    "  root.left = right;",
+    "  root.right = left;",
+    "  return root;",
+    "}"
+  ],
+  build: function (rec) {
+    var N = function (v, l, r) { return { v: v, l: l || null, r: r || null }; };
+    // [4,2,7,1,3,6,9]
+    var root = N(4, N(2, N(1), N(3)), N(7, N(6), N(9)));
+    var visited = {}, current = null;
+    function snapshot(line, note) {
+      var mk = function (n) {
+        if (!n) return null;
+        var state = null;
+        if (n === current) state = "current";
+        else if (visited[n.v]) state = "visited";
+        return { label: n.v, state: state, children: [mk(n.l), mk(n.r)] };
+      };
+      rec.step({ line: line, type: "tree", root: mk(root), note: note, aux: { } });
+    }
+    snapshot(1, "Goal: mirror the tree. We recurse down with DFS; at each node we invert both subtrees, then swap its two children.");
+
+    function invert(node, line) {
+      current = node;
+      if (node === null) { return null; }
+      snapshot(2, "Visit node " + node.v + ". It is not null, so we will invert its children and swap them.");
+      var left = invert(node.l, 3);
+      current = node;
+      snapshot(3, "Left subtree of " + node.v + " is fully inverted. Now invert the right subtree.");
+      var right = invert(node.r, 4);
+      current = node;
+      snapshot(4, "Right subtree of " + node.v + " is fully inverted. Time to swap the two children.");
+      node.l = right;
+      node.r = left;
+      visited[node.v] = true;
+      snapshot(5, "Swapped: node " + node.v + "'s left and right children are now exchanged. Mark " + node.v + " done.");
+      return node;
+    }
+    invert(root, 1);
+    current = null;
+    snapshot(7, "Every node is swapped — the tree is fully mirrored. Returning the inverted root " + root.v + ".");
+  }
+});
+</script>
+</body>
+</html>

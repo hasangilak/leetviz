@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add Two Numbers — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Add Two Numbers",
+  subtitle: "#2 · Medium · grade-school addition with a carry, digits stored least-significant first",
+  url: "https://leetcode.com/problems/add-two-numbers/",
+  code: [
+    "function addTwoNumbers(l1, l2) {",
+    "  const dummy = new ListNode();",
+    "  let tail = dummy;",
+    "  let carry = 0;",
+    "  while (l1 !== null || l2 !== null || carry !== 0) {",
+    "    const sum = (l1?.val ?? 0) + (l2?.val ?? 0) + carry;",
+    "    carry = Math.floor(sum / 10);",
+    "    tail.next = new ListNode(sum % 10);",
+    "    tail = tail.next;",
+    "    l1 = l1?.next ?? null;",
+    "    l2 = l2?.next ?? null;",
+    "  }",
+    "  return dummy.next;",
+    "}"
+  ],
+  build: function (rec) {
+    // l1 = [2,4,3] (=342), l2 = [5,6,4] (=465)   ->  [7,0,8] (=807)
+    var l1 = [2, 4, 3], l2 = [5, 6, 4];
+    var i = 0, carry = 0;
+    var out = []; // result-digit array we grow
+
+    rec.step({
+      line: 4, type: "array",
+      values: out.slice(),
+      pointers: {},
+      aux: { d1: "—", d2: "—", carry: carry },
+      note: "Digits are stored ones-first, so we add left-to-right like by hand. Result starts empty."
+    });
+
+    while (i < l1.length || i < l2.length || carry !== 0) {
+      var d1 = i < l1.length ? l1[i] : 0;
+      var d2 = i < l2.length ? l2[i] : 0;
+      var sum = d1 + d2 + carry;
+      rec.step({
+        line: 6, type: "array",
+        values: out.slice(),
+        pointers: {},
+        aux: { d1: d1, d2: d2, carry: carry },
+        note: "Column " + i + ": sum = d1(" + d1 + ") + d2(" + d2 + ") + carry(" + carry + ") = " + sum + "."
+      });
+      carry = Math.floor(sum / 10);
+      var digit = sum % 10;
+      out.push(digit);
+      rec.step({
+        line: 8, type: "array",
+        values: out.slice(),
+        pointers: { last: out.length - 1 },
+        hi: [out.length - 1],
+        aux: { d1: d1, d2: d2, carry: carry },
+        note: "Write sum % 10 = " + digit + " to the result; carry sum / 10 = " + carry + " into the next column."
+      });
+      i++;
+    }
+
+    rec.step({
+      line: 13, type: "array",
+      values: out.slice(),
+      pointers: {},
+      aux: { result: out.join(","), value: "" + out.slice().reverse().join("") },
+      note: "Both lists and the carry are exhausted → return dummy.next = [" + out.join(",") + "] (342 + 465 = 807)."
+    });
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Non-overlapping Intervals — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Non-overlapping Intervals",
+  subtitle: "#435 · Medium · greedy — sort by end, keep the earliest-finishing interval",
+  url: "https://leetcode.com/problems/non-overlapping-intervals/",
+  code: [
+    "function eraseOverlapIntervals(intervals) {",
+    "  intervals.sort((a, b) => a[1] - b[1]);   // by end time",
+    "  let prevEnd = -Infinity;",
+    "  let removals = 0;",
+    "  for (const [start, end] of intervals) {",
+    "    if (start >= prevEnd) {",
+    "      prevEnd = end;     // no overlap -> keep it",
+    "    } else {",
+    "      removals++;        // overlaps -> remove this one",
+    "    }",
+    "  }",
+    "  return removals;",
+    "}"
+  ],
+  build: function (rec) {
+    // already sorted by end time
+    var intervals = [[1, 2], [1, 3], [2, 3], [3, 4]];
+    var fmt = function (iv) { return "[" + iv[0] + "," + iv[1] + "]"; };
+    var cells = function () { return intervals.map(fmt); };
+
+    var prevEnd = -Infinity;
+    var removals = 0;
+    var removed = [];   // indices of removed intervals (dim)
+    var kept = [];      // indices kept
+
+    var auxOf = function () {
+      return {
+        prevEnd: prevEnd === -Infinity ? "-inf" : String(prevEnd),
+        removals: String(removals)
+      };
+    };
+
+    rec.step({
+      line: 2, type: "array", values: cells(), pointers: {},
+      note: "Sorted by end time. Greedily keep the interval that finishes earliest; it leaves the most room for the rest. Track prevEnd = last kept end.",
+      aux: auxOf()
+    });
+
+    for (var idx = 0; idx < intervals.length; idx++) {
+      var start = intervals[idx][0], end = intervals[idx][1];
+
+      rec.step({
+        line: 5, type: "array", values: cells(), pointers: { cur: idx }, hi: kept.slice(), dim: removed.slice(),
+        note: "Consider " + fmt([start, end]) + ". Compare its start " + start + " with prevEnd " + (prevEnd === -Infinity ? "-inf" : prevEnd) + ".",
+        aux: auxOf()
+      });
+
+      if (start >= prevEnd) {
+        prevEnd = end;
+        kept.push(idx);
+        rec.step({
+          line: 6, type: "array", values: cells(), pointers: { cur: idx }, hi: kept.slice(), dim: removed.slice(),
+          note: "start " + start + " >= prevEnd → no overlap. KEEP " + fmt([start, end]) + " and advance prevEnd to " + end + ".",
+          aux: auxOf()
+        });
+      } else {
+        removals++;
+        removed.push(idx);
+        rec.step({
+          line: 8, type: "array", values: cells(), pointers: { cur: idx }, hi: kept.slice(), dim: removed.slice(),
+          note: "start " + start + " < prevEnd " + prevEnd + " → overlaps the kept interval. REMOVE " + fmt([start, end]) + "; removals = " + removals + ".",
+          aux: auxOf()
+        });
+      }
+    }
+
+    rec.step({
+      line: 11, type: "array", values: cells(), pointers: {}, hi: kept.slice(), dim: removed.slice(),
+      note: "Sweep complete → minimum removals to make the rest non-overlapping is " + removals + ".",
+      aux: auxOf()
+    });
+  }
+});
+</script>
+</body>
+</html>

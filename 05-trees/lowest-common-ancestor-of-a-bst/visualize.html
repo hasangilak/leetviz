@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lowest Common Ancestor of a BST — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Lowest Common Ancestor of a BST",
+  subtitle: "#235 · Medium · walk down using BST order, stop at the split point",
+  url: "https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree/",
+  code: [
+    "function lowestCommonAncestor(root, p, q) {",
+    "  let node = root;",
+    "  while (node !== null) {",
+    "    if (p.val > node.val && q.val > node.val) {",
+    "      node = node.right;",
+    "    } else if (p.val < node.val && q.val < node.val) {",
+    "      node = node.left;",
+    "    } else {",
+    "      return node;",
+    "    }",
+    "  }",
+    "  return null;",
+    "}"
+  ],
+  build: function (rec) {
+    var N = function (v, l, r) { return { v: v, l: l || null, r: r || null }; };
+    // [6,2,8,0,4,7,9,null,null,3,5]
+    var root = N(6, N(2, N(0), N(4, N(3), N(5))), N(8, N(7), N(9)));
+    var p = 3, q = 5;
+    var visited = {}, current = null;
+    function snapshot(line, note) {
+      var mk = function (n) {
+        if (!n) return null;
+        var state = null;
+        if (n === current) state = "current";
+        else if (visited[n.v]) state = "visited";
+        return { label: n.v, state: state, children: [mk(n.l), mk(n.r)] };
+      };
+      rec.step({ line: line, type: "tree", root: mk(root), note: note, aux: { p: p, q: q } });
+    }
+    snapshot(1, "Find the LCA of p=" + p + " and q=" + q + ". In a BST we never search the whole tree — we walk down comparing values. (For p=2, q=8 the paths split at the very root 6, so the LCA is 6.)");
+
+    var node = root;
+    snapshot(2, "Start at the root, node " + node.v + ".");
+    while (node !== null) {
+      current = node;
+      if (p > node.v && q > node.v) {
+        snapshot(4, "Both " + p + " and " + q + " are greater than " + node.v + " → the LCA must be to the right. Go right.");
+        visited[node.v] = true;
+        node = node.r;
+        snapshot(5, "Moved to node " + node.v + ".");
+      } else if (p < node.v && q < node.v) {
+        snapshot(6, "Both " + p + " and " + q + " are less than " + node.v + " → the LCA must be to the left. Go left.");
+        visited[node.v] = true;
+        node = node.l;
+        snapshot(7, "Moved to node " + node.v + ".");
+      } else {
+        snapshot(9, "At " + node.v + " the paths to " + p + " and " + q + " diverge (one ≤ here, one ≥ here). This is the split point → " + node.v + " is the LCA.");
+        return;
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>

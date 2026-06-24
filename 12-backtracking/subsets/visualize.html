@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Subsets — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Subsets",
+  subtitle: "#78 · Medium · Backtracking — choose / recurse / un-choose to grow every subset",
+  url: "https://leetcode.com/problems/subsets/",
+  code: [
+    "function subsets(nums) {",
+    "  const result = [];",
+    "  const current = [];",
+    "  const backtrack = (start) => {",
+    "    result.push([...current]);   // every state is a subset",
+    "    for (let i = start; i < nums.length; i++) {",
+    "      current.push(nums[i]);     // choose",
+    "      backtrack(i + 1);          // recurse",
+    "      current.pop();             // un-choose",
+    "    }",
+    "  };",
+    "  backtrack(0);",
+    "  return result;",
+    "}"
+  ],
+  build: function (rec) {
+    var nums = [1, 2, 3];
+    var current = [];
+    var results = [];
+
+    // We render `current` (the subset being built). On a "choose" step a pointer
+    // labelled "+<value>" marks the freshly-pushed slot; captions narrate the rest.
+    var resultsText = function () {
+      return "[" + results.map(function (s) { return "[" + s.join(",") + "]"; }).join(", ") + "]";
+    };
+
+    rec.step({
+      line: 3, type: "array", values: current.slice(), pointers: {}, hi: [],
+      note: "Start with an empty `current` subset. We'll grow it by choosing elements left-to-right from nums = [1,2,3], recording the subset at every node.",
+      aux: { count: results.length, results: resultsText() }
+    });
+
+    var backtrack = function (start) {
+      // record current state — every node IS a subset
+      results.push(current.slice());
+      rec.step({
+        line: 5, type: "array", values: current.slice(),
+        hi: current.map(function (_, k) { return k; }),
+        note: "Record this subset: [" + current.join(",") + "]" + (current.length === 0 ? "  (the empty set)" : "") + ". Every recursion node is a valid subset.",
+        aux: { count: results.length, results: resultsText() }
+      });
+
+      for (var i = start; i < nums.length; i++) {
+        // choose nums[i]
+        current.push(nums[i]);
+        var choosePtr = {};
+        choosePtr["+" + nums[i]] = current.length - 1;
+        rec.step({
+          line: 7, type: "array", values: current.slice(),
+          pointers: choosePtr,
+          hi: [current.length - 1],
+          note: "Choose nums[" + i + "] = " + nums[i] + " → push onto current. Now current = [" + current.join(",") + "].",
+          aux: { count: results.length, results: resultsText() }
+        });
+
+        // recurse with i+1 (forward-only, so subsets are unique)
+        backtrack(i + 1);
+
+        // un-choose (backtrack)
+        var removed = current[current.length - 1];
+        current.pop();
+        rec.step({
+          line: 9, type: "array", values: current.slice(),
+          dim: current.map(function (_, k) { return k; }),
+          note: "Un-choose " + removed + " → pop it back off (backtrack). current = [" + current.join(",") + "]. Now try the next element at this level.",
+          aux: { count: results.length, results: resultsText() }
+        });
+      }
+    };
+
+    backtrack(0);
+
+    rec.step({
+      line: 13, type: "array", values: current.slice(), pointers: {}, hi: [],
+      note: "Done. All " + results.length + " subsets (the power set of [1,2,3]) have been recorded.",
+      aux: { count: results.length, results: resultsText() }
+    });
+  }
+});
+</script>
+</body>
+</html>

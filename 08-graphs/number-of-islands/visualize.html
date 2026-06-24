@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Number of Islands — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Number of Islands",
+  subtitle: "#200 · Medium · DFS flood-fill — sink each island so it's counted once",
+  url: "https://leetcode.com/problems/number-of-islands/",
+  code: [
+    "function numIslands(grid) {",
+    "  let islands = 0;",
+    "  const sink = (r, c) => {",
+    "    if (r<0||c<0||r>=rows||c>=cols||grid[r][c]!=='1') return;",
+    "    grid[r][c] = '0';            // mark visited by sinking",
+    "    sink(r+1,c); sink(r-1,c); sink(r,c+1); sink(r,c-1);",
+    "  };",
+    "  for (let r = 0; r < rows; r++)",
+    "    for (let c = 0; c < cols; c++)",
+    "      if (grid[r][c] === '1') {",
+    "        islands++;             // a brand-new island",
+    "        sink(r, c);            // remove the whole landmass",
+    "      }",
+    "  return islands;",
+    "}"
+  ],
+  build: function (rec) {
+    var grid = [
+      ["1", "1", "0", "0", "0"],
+      ["1", "1", "0", "0", "0"],
+      ["0", "0", "1", "0", "0"],
+      ["0", "0", "0", "1", "1"]
+    ];
+    var rows = grid.length, cols = grid[0].length;
+    var islands = 0;
+
+    rec.step({
+      line: 1, type: "grid", data: grid,
+      note: "Grid of '1' (land) and '0' (water). Scan top-to-bottom, left-to-right; each unvisited land cell starts a new island that we then sink.",
+      aux: { islands: islands }
+    });
+
+    // recursive DFS sink, recording a step each time a land cell is sunk
+    var sink = function (r, c) {
+      if (r < 0 || c < 0 || r >= rows || c >= cols || grid[r][c] !== "1") return;
+      grid[r][c] = "0";
+      rec.step({
+        line: 5, type: "grid", data: grid, cur: { r: r, c: c },
+        note: "Sinking (" + r + "," + c + "): '1' → '0'. The cell is now water, so it can never trigger a new island later.",
+        aux: { islands: islands }
+      });
+      sink(r + 1, c);
+      sink(r - 1, c);
+      sink(r, c + 1);
+      sink(r, c - 1);
+    };
+
+    for (var r = 0; r < rows; r++) {
+      for (var c = 0; c < cols; c++) {
+        if (grid[r][c] === "1") {
+          islands++;
+          rec.step({
+            line: 11, type: "grid", data: grid, cur: { r: r, c: c },
+            note: "Found unvisited land at (" + r + "," + c + ") → new island #" + islands + ". Now flood-fill its whole connected landmass.",
+            aux: { islands: islands }
+          });
+          sink(r, c);
+        }
+      }
+    }
+
+    rec.step({
+      line: 14, type: "grid", data: grid,
+      note: "Grid fully drained. Every connected landmass was sunk exactly once, so the count is the number of islands: " + islands + ".",
+      aux: { islands: islands, answer: islands }
+    });
+  }
+});
+</script>
+</body>
+</html>

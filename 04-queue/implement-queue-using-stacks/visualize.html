@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Implement Queue using Stacks — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Implement Queue using Stacks",
+  subtitle: "#232 · Easy · two stacks; pouring in→out reverses LIFO back into FIFO",
+  url: "https://leetcode.com/problems/implement-queue-using-stacks/",
+  code: [
+    "class MyQueue {",
+    "  inStack = []; outStack = [];",
+    "  push(x) { this.inStack.push(x); }",
+    "  pop()  { this.transfer(); return this.outStack.pop(); }",
+    "  peek() { this.transfer(); return this.outStack.at(-1); }",
+    "  transfer() {",
+    "    if (this.outStack.length === 0)",
+    "      while (this.inStack.length)",
+    "        this.outStack.push(this.inStack.pop());",
+    "  }",
+    "}"
+  ],
+  build: function (rec) {
+    var inStack = [], outStack = [];
+    var showOut = function () { return outStack.length ? "[ " + outStack.join(" ") + "  ←top(front)" : "(empty)"; };
+
+    var push = function (x) {
+      inStack.push(x);
+      rec.step({
+        line: 2, type: "array", values: inStack.slice(), pointers: { top: inStack.length - 1 }, hi: [inStack.length - 1],
+        note: "push(" + x + "): always goes onto inStack (newest on top). No transfer happens on a push.",
+        aux: { op: "push(" + x + ")", outStack: showOut() }
+      });
+    };
+    var transfer = function () {
+      if (outStack.length === 0 && inStack.length > 0) {
+        rec.step({
+          line: 7, type: "array", values: inStack.slice(), pointers: inStack.length ? { top: inStack.length - 1 } : {},
+          note: "outStack is empty → pour ALL of inStack into outStack. This second reversal flips newest-on-top into oldest-on-top (FIFO order).",
+          aux: { op: "transfer", outStack: showOut() }
+        });
+        while (inStack.length > 0) {
+          var v = inStack.pop();
+          outStack.push(v);
+          rec.step({
+            line: 8, type: "array", values: inStack.slice(), pointers: inStack.length ? { top: inStack.length - 1 } : {},
+            note: "Pour: pop " + v + " from inStack → push onto outStack.",
+            aux: { op: "transfer", moved: v, outStack: showOut() }
+          });
+        }
+      }
+    };
+    var peek = function () {
+      transfer();
+      var v = outStack[outStack.length - 1];
+      rec.step({
+        line: 4, type: "array", values: inStack.slice(), pointers: inStack.length ? { top: inStack.length - 1 } : {},
+        note: "peek() → top of outStack = " + v + " (that's the queue's front, the oldest element).",
+        aux: { op: "peek()", outStack: showOut(), result: v }
+      });
+    };
+    var pop = function () {
+      transfer();
+      var v = outStack.pop();
+      rec.step({
+        line: 3, type: "array", values: inStack.slice(), pointers: inStack.length ? { top: inStack.length - 1 } : {},
+        note: "pop() → pop the top of outStack = " + v + ". Front of the queue removed.",
+        aux: { op: "pop()", outStack: showOut(), result: v }
+      });
+    };
+
+    rec.step({
+      line: 1, type: "array", values: [], pointers: {},
+      note: "Both stacks empty. The shown array is inStack; outStack is in the chip below. Trace: push(1), push(2), peek, pop, push(3), pop, pop.",
+      aux: { op: "(init)", outStack: showOut() }
+    });
+    push(1);
+    push(2);
+    peek();   // transfers [1,2] -> out=[2,1], front = 1
+    pop();    // 1
+    push(3);  // goes to inStack
+    pop();    // out still has 2 -> returns 2
+    pop();    // out empty -> transfer [3] -> returns 3
+  }
+});
+</script>
+</body>
+</html>

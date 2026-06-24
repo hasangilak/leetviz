@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Validate Binary Search Tree — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Validate Binary Search Tree",
+  subtitle: "#98 · Medium · DFS carrying an allowed (low, high) range",
+  url: "https://leetcode.com/problems/validate-binary-search-tree/",
+  code: [
+    "function isValidBST(root) {",
+    "  const validate = (node, low, high) => {",
+    "    if (node === null) return true;",
+    "    if (node.val <= low || node.val >= high)",
+    "      return false;",
+    "    return validate(node.left, low, node.val)",
+    "        && validate(node.right, node.val, high);",
+    "  };",
+    "  return validate(root, -Infinity, Infinity);",
+    "}"
+  ],
+  build: function (rec) {
+    var N = function (v, l, r) { return { v: v, l: l || null, r: r || null }; };
+    // [5,1,4,null,null,3,6]  — INVALID (3 sits in 5's right subtree but 3 < 5)
+    var root = N(5, N(1), N(4, N(3), N(6)));
+    var visited = {}, fail = null, current = null;
+    function fmt(x) { return x === Infinity ? "+∞" : x === -Infinity ? "-∞" : String(x); }
+    function snapshot(line, note, low, high) {
+      var mk = function (n) {
+        if (!n) return null;
+        var state = null;
+        if (n === current) state = "current";
+        else if (visited[n.v]) state = "visited";
+        return { label: n.v, state: state, children: [mk(n.l), mk(n.r)] };
+      };
+      var aux = {};
+      if (low !== undefined) aux.low = fmt(low);
+      if (high !== undefined) aux.high = fmt(high);
+      rec.step({ line: line, type: "tree", root: mk(root), note: note, aux: aux });
+    }
+    snapshot(9, "The BST rule is global: every node must fall in an open (low, high) interval inherited from its ancestors. Start the root with (-∞, +∞).");
+
+    function validate(node, low, high) {
+      current = node;
+      if (node === null) {
+        snapshot(3, "Null child is vacuously valid → return true.", low, high);
+        return true;
+      }
+      snapshot(2, "Visit " + node.v + ". Allowed open interval is (" + fmt(low) + ", " + fmt(high) + ").", low, high);
+      if (node.v <= low || node.v >= high) {
+        fail = node;
+        snapshot(4, "VIOLATION: " + node.v + " is not strictly inside (" + fmt(low) + ", " + fmt(high) + "). This breaks the BST → return false.", low, high);
+        return false;
+      }
+      snapshot(5, node.v + " is inside its bounds. Recurse left with the upper bound tightened to " + node.v + ".", low, high);
+      var okL = validate(node.l, low, node.v);
+      current = node;
+      if (!okL) {
+        snapshot(5, "Left subtree of " + node.v + " was invalid, so " + node.v + " is invalid too → short-circuit false.", low, high);
+        return false;
+      }
+      snapshot(6, "Left of " + node.v + " is valid. Recurse right with the lower bound tightened to " + node.v + ".", low, high);
+      var okR = validate(node.r, node.v, high);
+      current = node;
+      visited[node.v] = true;
+      return okR;
+    }
+    var ans = validate(root, -Infinity, Infinity);
+    current = fail; // keep the culprit highlighted
+    snapshot(9, "Final answer: " + ans + ". Walking right from 5 tightened the lower bound to 5, but node 4 (and its child 3) sit in 5's right subtree while being < 5 — so this tree is NOT a valid BST.");
+  }
+});
+</script>
+</body>
+</html>

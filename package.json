@@ -1,0 +1,23 @@
+{
+  "name": "leetcode-typescript",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LeetCode data-structure problems solved in TypeScript, organized by data structure. Each problem has a runnable solution and an explanation.",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "solve": "tsx"
+  },
+  "keywords": [
+    "leetcode",
+    "typescript",
+    "data-structures",
+    "algorithms",
+    "interview"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^26.0.0",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
+  }
+}

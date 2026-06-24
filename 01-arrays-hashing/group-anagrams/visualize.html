@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Group Anagrams — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Group Anagrams",
+  subtitle: "#49 · Medium · bucket by a 26-letter count signature",
+  url: "https://leetcode.com/problems/group-anagrams/",
+  code: [
+    "function groupAnagrams(strs) {",
+    "  const groups = new Map();",
+    "  for (const s of strs) {",
+    "    const count = new Array(26).fill(0);",
+    "    for (const ch of s) count[ch.charCodeAt(0) - 97]++;",
+    "    const key = count.join('#');",
+    "    if (groups.has(key)) groups.get(key).push(s);",
+    "    else groups.set(key, [s]);",
+    "  }",
+    "  return [...groups.values()];",
+    "}"
+  ],
+  build: function (rec) {
+    var strs = ["eat", "tea", "tan", "ate", "nat", "bat"];
+    var groups = {};                         // key -> array of words
+    // Compact, readable signature: sorted letters of the word (same for anagrams).
+    var sig = function (s) { return s.split("").sort().join(""); };
+    var bucketsStr = function () {
+      var parts = [];
+      Object.keys(groups).forEach(function (k) { parts.push("[" + groups[k].join(",") + "]"); });
+      return parts.join(" ");
+    };
+    rec.step({ line: 2, type: "array", values: strs, pointers: {}, note: "Two words are anagrams iff they share the same letter counts. We bucket each word under its sorted-letter signature.", aux: { groups: "(none)" } });
+    for (var i = 0; i < strs.length; i++) {
+      var s = strs[i];
+      var key = sig(s);
+      rec.step({ line: 5, type: "array", values: strs, pointers: { i: i }, hi: [i], note: "Word \"" + s + "\": sort its letters to get the signature \"" + key + "\" (the real code uses a 26-slot count vector joined by '#').", aux: { key: key, bucket: groups[key] ? "[" + groups[key].join(",") + "]" : "(new)" } });
+      if (Object.prototype.hasOwnProperty.call(groups, key)) {
+        groups[key].push(s);
+        rec.step({ line: 7, type: "array", values: strs, pointers: { i: i }, hi: [i], note: "Signature \"" + key + "\" already exists → append \"" + s + "\" to that bucket.", aux: { key: key, bucket: "[" + groups[key].join(",") + "]", groups: bucketsStr() } });
+      } else {
+        groups[key] = [s];
+        rec.step({ line: 8, type: "array", values: strs, pointers: { i: i }, hi: [i], dim: [i], note: "Signature \"" + key + "\" is new → start a fresh bucket containing \"" + s + "\".", aux: { key: key, bucket: "[" + s + "]", groups: bucketsStr() } });
+      }
+    }
+    rec.step({ line: 10, type: "array", values: strs, pointers: {}, note: "Done. Return all buckets: " + bucketsStr() + ".", aux: { groups: bucketsStr() } });
+  }
+});
+</script>
+</body>
+</html>

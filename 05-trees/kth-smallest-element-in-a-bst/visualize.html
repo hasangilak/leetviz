@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kth Smallest in a BST — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Kth Smallest Element in a BST",
+  subtitle: "#230 · Medium · iterative in-order traversal, stop at the k-th node",
+  url: "https://leetcode.com/problems/kth-smallest-element-in-a-bst/",
+  code: [
+    "function kthSmallest(root, k) {",
+    "  const stack = [];",
+    "  let node = root;",
+    "  while (node || stack.length) {",
+    "    while (node) { stack.push(node); node = node.left; }",
+    "    node = stack.pop();",
+    "    if (--k === 0) return node.val;",
+    "    node = node.right;",
+    "  }",
+    "}"
+  ],
+  build: function (rec) {
+    var N = function (v, l, r) { return { v: v, l: l || null, r: r || null }; };
+    var root = N(5, N(3, N(2, N(1)), N(4)), N(6));
+    var stack = [], node = root, k = 3, visited = {};
+    function snapshot(line, note, extraAux) {
+      var st = {};
+      Object.keys(visited).forEach(function (v) { st[v] = "visited"; });
+      stack.forEach(function (s) { st[s.v] = st[s.v] || "instack"; });
+      if (node) st[node.v] = "current";
+      var mk = function (n) { return n ? { label: n.v, state: st[n.v] || null, children: [mk(n.l), mk(n.r)] } : null; };
+      var aux = { k: k };
+      if (extraAux) for (var key in extraAux) aux[key] = extraAux[key];
+      rec.step({ line: line, type: "tree", root: mk(root), note: note, aux: aux });
+    }
+    snapshot(3, "In-order traversal of a BST visits values in sorted order. We want the " + k + "rd smallest, so we walk in-order and count down k.");
+    while (node || stack.length) {
+      while (node) { snapshot(5, "Dive left: push " + node.v + " on the stack, go to its left child."); stack.push(node); node = node.l; }
+      node = stack.pop();
+      snapshot(6, "Pop " + node.v + " — the next-smallest unvisited value.");
+      visited[node.v] = true;
+      k--;
+      if (k === 0) { snapshot(7, "--k reached 0 → " + node.v + " is the answer.", { answer: node.v }); return; }
+      node = node.r;
+      snapshot(8, "Not there yet (k = " + k + "). Move into the right subtree of the popped node.");
+    }
+  }
+});
+</script>
+</body>
+</html>

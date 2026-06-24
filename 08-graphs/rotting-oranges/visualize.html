@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rotting Oranges — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Rotting Oranges",
+  subtitle: "#994 · Medium · Multi-source BFS — rot spreads one ring per minute",
+  url: "https://leetcode.com/problems/rotting-oranges/",
+  code: [
+    "function orangesRotting(grid) {",
+    "  let frontier = [], fresh = 0;",
+    "  // seed: every rotten (2) into the frontier; count fresh (1)",
+    "  let minutes = 0;",
+    "  while (frontier.length && fresh > 0) {",
+    "    const next = [];",
+    "    for (const [r, c] of frontier)",
+    "      for (const [nr, nc] of neighbours(r, c))",
+    "        if (grid[nr][nc] === 1) {",
+    "          grid[nr][nc] = 2;       // newly rotten",
+    "          fresh--; next.push([nr, nc]);",
+    "        }",
+    "    frontier = next; minutes++;",
+    "  }",
+    "  return fresh === 0 ? minutes : -1;",
+    "}"
+  ],
+  build: function (rec) {
+    var grid = [
+      [2, 1, 1],
+      [1, 1, 0],
+      [0, 1, 1]
+    ];
+    var rows = grid.length, cols = grid[0].length;
+    var frontier = [];
+    var fresh = 0;
+
+    for (var r = 0; r < rows; r++) {
+      for (var c = 0; c < cols; c++) {
+        if (grid[r][c] === 2) frontier.push([r, c]);
+        else if (grid[r][c] === 1) fresh++;
+      }
+    }
+
+    rec.step({
+      line: 3, type: "grid", data: grid,
+      note: "0 = empty, 1 = fresh, 2 = rotten. Seed the BFS frontier with every rotten orange (here just (0,0)) and count the fresh ones.",
+      aux: { minute: 0, fresh: fresh, frontier: frontier.length }
+    });
+
+    var dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    var minutes = 0;
+
+    while (frontier.length > 0 && fresh > 0) {
+      var next = [];
+      for (var i = 0; i < frontier.length; i++) {
+        var fr = frontier[i][0], fc = frontier[i][1];
+        for (var d = 0; d < dirs.length; d++) {
+          var nr = fr + dirs[d][0], nc = fc + dirs[d][1];
+          if (nr >= 0 && nc >= 0 && nr < rows && nc < cols && grid[nr][nc] === 1) {
+            grid[nr][nc] = 2;
+            fresh--;
+            next.push([nr, nc]);
+            rec.step({
+              line: 10, type: "grid", data: grid, cur: { r: nr, c: nc },
+              hi: [{ r: fr, c: fc }],
+              note: "Minute " + (minutes + 1) + ": rotten (" + fr + "," + fc + ") infects fresh neighbour (" + nr + "," + nc + ") → it turns rotten (1 → 2).",
+              aux: { minute: minutes + 1, fresh: fresh }
+            });
+          }
+        }
+      }
+      frontier = next;
+      minutes++;
+      rec.step({
+        line: 13, type: "grid", data: grid,
+        note: "End of minute " + minutes + ": the whole ring rotted at once. " + fresh + " fresh orange(s) remain; they rot in the next minute's wave.",
+        aux: { minute: minutes, fresh: fresh, frontier: frontier.length }
+      });
+    }
+
+    rec.step({
+      line: 16, type: "grid", data: grid,
+      note: fresh === 0
+        ? "No fresh oranges left — everything rotted. Answer = minutes elapsed = " + minutes + "."
+        : "Frontier emptied but " + fresh + " fresh orange(s) are unreachable → answer = -1.",
+      aux: { minute: minutes, fresh: fresh, answer: (fresh === 0 ? minutes : -1) }
+    });
+  }
+});
+</script>
+</body>
+</html>

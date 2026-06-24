@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clone Graph — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Clone Graph",
+  subtitle: "#133 · Medium · DFS with an original→clone map to deep-copy nodes & edges",
+  url: "https://leetcode.com/problems/clone-graph/",
+  code: [
+    "function cloneGraph(node) {",
+    "  const cloned = new Map();          // original -> clone",
+    "  const dfs = (orig) => {",
+    "    if (cloned.has(orig)) return cloned.get(orig);  // cycle stop",
+    "    const copy = new Node(orig.val);",
+    "    cloned.set(orig, copy);          // register BEFORE recursing",
+    "    for (const nb of orig.neighbors)",
+    "      copy.neighbors.push(dfs(nb));  // wire to the CLONE",
+    "    return copy;",
+    "  };",
+    "  return dfs(node);",
+    "}"
+  ],
+  build: function (rec) {
+    // Square graph 1-2-3-4-1 (undirected). neighbors mirror the solution's order.
+    var nodes = {
+      1: { val: 1, neighbors: [2, 4] },
+      2: { val: 2, neighbors: [1, 3] },
+      3: { val: 3, neighbors: [2, 4] },
+      4: { val: 4, neighbors: [1, 3] }
+    };
+    var order = [1, 2, 3, 4];                 // fixed array layout for the renderer
+    var idx = { 1: 0, 2: 1, 3: 2, 4: 3 };
+    var values = order.map(function (v) { return v; });
+
+    var cloned = {};                          // original val -> true once a clone exists
+    var mapStr = function () {
+      var parts = order.filter(function (v) { return cloned[v]; })
+        .map(function (v) { return v + ":" + v + "'"; });
+      return "{" + parts.join(",") + "}";
+    };
+
+    rec.step({
+      line: 1, type: "array", values: values,
+      note: "Undirected square 1-2-3-4-1. Each value is a node. We DFS from node 1, cloning every node once and wiring each clone's edges to the CLONED neighbours.",
+      aux: { map: mapStr() }
+    });
+
+    var dfs = function (orig) {
+      if (cloned[orig]) {
+        rec.step({
+          line: 4, type: "array", values: values, pointers: { dfs: idx[orig] }, dim: [idx[orig]],
+          note: "dfs(" + orig + "): " + orig + " is already in the map → return its existing clone " + orig + "'. This is what stops the cycles (it's undirected).",
+          aux: { map: mapStr() }
+        });
+        return;
+      }
+      // make + register the clone
+      cloned[orig] = true;
+      rec.step({
+        line: 6, type: "array", values: values, pointers: { dfs: idx[orig] }, hi: [idx[orig]],
+        note: "dfs(" + orig + "): create clone " + orig + "' and register " + orig + "→" + orig + "' in the map BEFORE recursing, so revisits short-circuit.",
+        aux: { map: mapStr() }
+      });
+      var nbs = nodes[orig].neighbors;
+      for (var k = 0; k < nbs.length; k++) {
+        var nb = nbs[k];
+        rec.step({
+          line: 8, type: "array", values: values, pointers: { dfs: idx[orig], nb: idx[nb] },
+          hi: [idx[orig]], dim: [idx[nb]],
+          note: "Wiring edge " + orig + "'→" + nb + "': recurse into neighbour " + nb + ", then push the returned clone onto " + orig + "'.neighbors.",
+          aux: { map: mapStr() }
+        });
+        dfs(nb);
+      }
+    };
+
+    dfs(1);
+
+    rec.step({
+      line: 11, type: "array", values: values,
+      note: "DFS done. All 4 nodes cloned and every edge (1-2, 1-4, 2-3, 3-4) wired between clones — a true deep copy sharing no references with the original.",
+      aux: { map: mapStr(), answer: "1'" }
+    });
+  }
+});
+</script>
+</body>
+</html>

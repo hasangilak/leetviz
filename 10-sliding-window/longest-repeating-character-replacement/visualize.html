@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Longest Repeating Character Replacement — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Longest Repeating Character Replacement",
+  subtitle: "#424 · Medium · sliding window keyed on replacements needed",
+  url: "https://leetcode.com/problems/longest-repeating-character-replacement/",
+  code: [
+    "function characterReplacement(s, k) {",
+    "  const count = {};",
+    "  let left = 0, maxCount = 0, best = 0;",
+    "  for (let right = 0; right < s.length; right++) {",
+    "    count[s[right]] = (count[s[right]] || 0) + 1;",
+    "    maxCount = Math.max(maxCount, count[s[right]]);",
+    "    while (right - left + 1 - maxCount > k) {",
+    "      count[s[left]]--;",
+    "      left++;",
+    "    }",
+    "    best = Math.max(best, right - left + 1);",
+    "  }",
+    "  return best;",
+    "}"
+  ],
+  build: function (rec) {
+    var s = "AABABBA".split("");
+    var k = 1;
+    var count = {};
+    var left = 0, maxCount = 0, best = 0;
+    var countStr = function () {
+      var parts = [];
+      Object.keys(count).forEach(function (c) { if (count[c] > 0) parts.push(c + ":" + count[c]); });
+      return parts.length ? parts.join(" ") : "(empty)";
+    };
+    rec.step({ line: 3, type: "array", values: s, pointers: { left: 0, right: 0 }, window: [0, 0], note: "Window is valid while (length − maxCount) ≤ k = " + k + " — i.e. at most k chars need replacing.", aux: { maxCount: maxCount, need: 0, best: best } });
+    for (var right = 0; right < s.length; right++) {
+      var ch = s[right];
+      count[ch] = (count[ch] || 0) + 1;
+      maxCount = Math.max(maxCount, count[ch]);
+      var need = (right - left + 1) - maxCount;
+      rec.step({ line: 5, type: "array", values: s, pointers: { left: left, right: right }, hi: [right], window: [left, right], note: "Extend right to " + right + " ('" + ch + "'). counts: " + countStr() + ". maxCount = " + maxCount + ". need = len " + (right - left + 1) + " − " + maxCount + " = " + need + ".", aux: { maxCount: maxCount, need: need, best: best } });
+      while ((right - left + 1) - maxCount > k) {
+        rec.step({ line: 7, type: "array", values: s, pointers: { left: left, right: right }, dim: [left], window: [left, right], note: "need " + ((right - left + 1) - maxCount) + " > k = " + k + " — too many replacements. Shrink from the left ('" + s[left] + "').", aux: { maxCount: maxCount, need: (right - left + 1) - maxCount, best: best } });
+        count[s[left]]--;
+        left++;
+      }
+      best = Math.max(best, right - left + 1);
+      rec.step({ line: 11, type: "array", values: s, pointers: { left: left, right: right }, window: [left, right], note: "Valid window length " + (right - left + 1) + " → best = " + best + ".", aux: { maxCount: maxCount, need: (right - left + 1) - maxCount, best: best } });
+    }
+    rec.step({ line: 13, type: "array", values: s, pointers: {}, note: "Longest achievable run of one letter (≤ " + k + " replacement) has length " + best + ".", aux: { maxCount: maxCount, need: 0, best: best } });
+  }
+});
+</script>
+</body>
+</html>

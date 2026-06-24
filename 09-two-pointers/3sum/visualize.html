@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3Sum — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "3Sum",
+  subtitle: "#15 · Medium · sort, then fix one + two pointers",
+  url: "https://leetcode.com/problems/3sum/",
+  code: [
+    "function threeSum(nums) {",
+    "  const result = [];",
+    "  nums.sort((a, b) => a - b);",
+    "  for (let i = 0; i < nums.length - 2; i++) {",
+    "    if (nums[i] > 0) break;",
+    "    if (i > 0 && nums[i] === nums[i - 1]) continue;",
+    "    let lo = i + 1, hi = nums.length - 1;",
+    "    while (lo < hi) {",
+    "      const sum = nums[i] + nums[lo] + nums[hi];",
+    "      if (sum < 0) lo++;",
+    "      else if (sum > 0) hi--;",
+    "      else {",
+    "        result.push([nums[i], nums[lo], nums[hi]]);",
+    "        lo++; hi--;",
+    "        while (lo < hi && nums[lo] === nums[lo - 1]) lo++;",
+    "        while (lo < hi && nums[hi] === nums[hi + 1]) hi--;",
+    "      }",
+    "    }",
+    "  }",
+    "  return result;",
+    "}"
+  ],
+  build: function (rec) {
+    var nums = [-4, -1, -1, 0, 1, 2]; // already sorted
+    var result = [];
+    var copy = function (r) { return r.map(function (t) { return "[" + t.join(",") + "]"; }).join(" "); };
+    rec.step({ line: 3, type: "array", values: nums, pointers: {}, note: "Already sorted. Fix nums[i], then two-pointer the rest for a pair summing to -nums[i].", aux: { results: "(none)" } });
+    for (var i = 0; i < nums.length - 2; i++) {
+      if (nums[i] > 0) {
+        rec.step({ line: 5, type: "array", values: nums, pointers: { i: i }, hi: [i], note: "nums[i] = " + nums[i] + " > 0 — the smallest is positive, so no zero-sum triplet remains. Break.", aux: { results: copy(result) || "(none)" } });
+        break;
+      }
+      if (i > 0 && nums[i] === nums[i - 1]) {
+        rec.step({ line: 6, type: "array", values: nums, pointers: { i: i }, dim: [i], note: "nums[i] (" + nums[i] + ") equals the previous anchor — skip to avoid duplicate triplets.", aux: { results: copy(result) || "(none)" } });
+        continue;
+      }
+      var lo = i + 1, hi = nums.length - 1;
+      rec.step({ line: 7, type: "array", values: nums, pointers: { i: i, lo: lo, hi: hi }, hi: [i], note: "Anchor nums[i] = " + nums[i] + ". Place lo just after i and hi at the end; target pair sum = " + (-nums[i]) + ".", aux: { results: copy(result) || "(none)" } });
+      while (lo < hi) {
+        var sum = nums[i] + nums[lo] + nums[hi];
+        rec.step({ line: 8, type: "array", values: nums, pointers: { i: i, lo: lo, hi: hi }, hi: [i, lo, hi], note: "sum = " + nums[i] + " + " + nums[lo] + " + " + nums[hi] + " = " + sum, aux: { sum: sum, results: copy(result) || "(none)" } });
+        if (sum < 0) {
+          rec.step({ line: 9, type: "array", values: nums, pointers: { i: i, lo: lo, hi: hi }, hi: [lo], note: "sum " + sum + " < 0 — too small. Move lo right for a bigger value.", aux: { sum: sum, results: copy(result) || "(none)" } });
+          lo++;
+        } else if (sum > 0) {
+          rec.step({ line: 10, type: "array", values: nums, pointers: { i: i, lo: lo, hi: hi }, hi: [hi], note: "sum " + sum + " > 0 — too big. Move hi left for a smaller value.", aux: { sum: sum, results: copy(result) || "(none)" } });
+          hi--;
+        } else {
+          result.push([nums[i], nums[lo], nums[hi]]);
+          rec.step({ line: 12, type: "array", values: nums, pointers: { i: i, lo: lo, hi: hi }, hi: [i, lo, hi], note: "sum === 0 — found triplet [" + nums[i] + ", " + nums[lo] + ", " + nums[hi] + "]! Record it.", aux: { sum: 0, results: copy(result) } });
+          lo++; hi--;
+          while (lo < hi && nums[lo] === nums[lo - 1]) {
+            rec.step({ line: 14, type: "array", values: nums, pointers: { i: i, lo: lo, hi: hi }, dim: [lo], note: "nums[lo] (" + nums[lo] + ") equals the previous lo value — skip duplicate.", aux: { results: copy(result) } });
+            lo++;
+          }
+          while (lo < hi && nums[hi] === nums[hi + 1]) {
+            rec.step({ line: 15, type: "array", values: nums, pointers: { i: i, lo: lo, hi: hi }, dim: [hi], note: "nums[hi] (" + nums[hi] + ") equals the previous hi value — skip duplicate.", aux: { results: copy(result) } });
+            hi--;
+          }
+        }
+      }
+    }
+    rec.step({ line: 19, type: "array", values: nums, pointers: {}, note: "Done. Unique triplets: " + (copy(result) || "(none)"), aux: { results: copy(result) || "(none)" } });
+  }
+});
+</script>
+</body>
+</html>

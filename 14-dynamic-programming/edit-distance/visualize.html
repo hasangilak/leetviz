@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edit Distance — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Edit Distance",
+  subtitle: "#72 · Hard · 2-D DP grid — watch the table fill cell by cell",
+  url: "https://leetcode.com/problems/edit-distance/",
+  code: [
+    "function minDistance(a, b) {",
+    "  const dp = grid(a.length + 1, b.length + 1);",
+    "  for (let i = 0; i <= a.length; i++) dp[i][0] = i;",
+    "  for (let j = 0; j <= b.length; j++) dp[0][j] = j;",
+    "  for (let i = 1; i <= a.length; i++)",
+    "    for (let j = 1; j <= b.length; j++)",
+    "      if (a[i-1] === b[j-1])",
+    "        dp[i][j] = dp[i-1][j-1];",
+    "      else",
+    "        dp[i][j] = 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);",
+    "  return dp[a.length][b.length];",
+    "}"
+  ],
+  build: function (rec) {
+    var a = "horse", b = "ros";
+    var m = a.length, n = b.length;
+    var dp = [];
+    for (var i = 0; i <= m; i++) { dp.push([]); for (var j = 0; j <= n; j++) dp[i].push(null); }
+    for (var i2 = 0; i2 <= m; i2++) dp[i2][0] = i2;
+    for (var j2 = 0; j2 <= n; j2++) dp[0][j2] = j2;
+    var rL = ["∅"].concat(a.split(""));
+    var cL = ["∅"].concat(b.split(""));
+    rec.step({ line: 4, type: "grid", data: dp, rLabels: rL, cLabels: cL, corner: "", note: "Base row & column: turning any prefix into the empty string costs its length (all deletes / all inserts)." });
+    for (var r = 1; r <= m; r++) {
+      for (var c = 1; c <= n; c++) {
+        var match = a[r - 1] === b[c - 1];
+        if (match) dp[r][c] = dp[r - 1][c - 1];
+        else dp[r][c] = 1 + Math.min(dp[r - 1][c], dp[r][c - 1], dp[r - 1][c - 1]);
+        rec.step({
+          line: match ? 8 : 10, type: "grid", data: dp, rLabels: rL, cLabels: cL,
+          cur: { r: r, c: c }, hi: [{ r: r - 1, c: c }, { r: r, c: c - 1 }, { r: r - 1, c: c - 1 }],
+          note: match
+            ? ("'" + a[r - 1] + "' = '" + b[c - 1] + "' → free, copy the diagonal ↖ = " + dp[r][c])
+            : ("'" + a[r - 1] + "' ≠ '" + b[c - 1] + "' → 1 + min( ↑" + dp[r - 1][c] + " delete, ←" + dp[r][c - 1] + " insert, ↖" + dp[r - 1][c - 1] + " replace ) = " + dp[r][c])
+        });
+      }
+    }
+    rec.step({ line: 11, type: "grid", data: dp, rLabels: rL, cLabels: cL, cur: { r: m, c: n }, note: "Bottom-right cell is the answer: " + dp[m][n] + " edits turn \"horse\" into \"ros\".", aux: { answer: dp[m][n] } });
+  }
+});
+</script>
+</body>
+</html>

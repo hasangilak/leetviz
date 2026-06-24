@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search in Rotated Sorted Array — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Search in Rotated Sorted Array",
+  subtitle: "#33 · Medium · binary search — one half is always sorted",
+  url: "https://leetcode.com/problems/search-in-rotated-sorted-array/",
+  code: [
+    "function search(nums, target) {",
+    "  let lo = 0, hi = nums.length - 1;",
+    "  while (lo <= hi) {",
+    "    const mid = (lo + hi) >> 1;",
+    "    if (nums[mid] === target) return mid;",
+    "    if (nums[lo] <= nums[mid]) {            // left sorted",
+    "      if (nums[lo] <= target && target < nums[mid]) hi = mid - 1;",
+    "      else lo = mid + 1;",
+    "    } else {                                // right sorted",
+    "      if (nums[mid] < target && target <= nums[hi]) lo = mid + 1;",
+    "      else hi = mid - 1;",
+    "    }",
+    "  }",
+    "  return -1;",
+    "}"
+  ],
+  build: function (rec) {
+    var nums = [4, 5, 6, 7, 0, 1, 2], target = 0;
+    var lo = 0, hi = nums.length - 1;
+    var range = function (a, b) { var r = []; for (var i = a; i <= b; i++) r.push(i); return r; };
+    rec.step({ line: 2, type: "array", values: nums, pointers: { lo: lo, hi: hi }, note: "Searching for " + target + ". The array was sorted, then rotated at an unknown pivot." });
+    while (lo <= hi) {
+      var mid = (lo + hi) >> 1;
+      rec.step({ line: 4, type: "array", values: nums, pointers: { lo: lo, mid: mid, hi: hi }, hi: [mid], note: "mid = (" + lo + " + " + hi + ") >> 1 = " + mid + "  →  value " + nums[mid] });
+      if (nums[mid] === target) {
+        rec.step({ line: 5, type: "array", values: nums, pointers: { mid: mid }, hi: [mid], note: "nums[mid] === target → found at index " + mid + ".", aux: { answer: mid } });
+        return;
+      }
+      if (nums[lo] <= nums[mid]) {
+        if (nums[lo] <= target && target < nums[mid]) {
+          rec.step({ line: 7, type: "array", values: nums, pointers: { lo: lo, mid: mid, hi: hi }, hi: [mid], dim: range(mid, hi), note: "Left half [" + nums[lo] + ".." + nums[mid] + ") is sorted AND holds the target → discard the right half." });
+          hi = mid - 1;
+        } else {
+          rec.step({ line: 8, type: "array", values: nums, pointers: { lo: lo, mid: mid, hi: hi }, hi: [mid], dim: range(lo, mid), note: "Left half is sorted but the target is not inside it → discard the left half." });
+          lo = mid + 1;
+        }
+      } else {
+        if (nums[mid] < target && target <= nums[hi]) {
+          rec.step({ line: 10, type: "array", values: nums, pointers: { lo: lo, mid: mid, hi: hi }, hi: [mid], dim: range(lo, mid), note: "Right half is sorted AND holds the target → discard the left half." });
+          lo = mid + 1;
+        } else {
+          rec.step({ line: 11, type: "array", values: nums, pointers: { lo: lo, mid: mid, hi: hi }, hi: [mid], dim: range(mid, hi), note: "Right half is sorted but the target is not inside it → discard the right half." });
+          hi = mid - 1;
+        }
+      }
+    }
+    rec.step({ line: 14, type: "array", values: nums, pointers: {}, note: "Search space empty → target not found, return -1." });
+  }
+});
+</script>
+</body>
+</html>

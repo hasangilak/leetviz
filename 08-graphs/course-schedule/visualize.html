@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Course Schedule — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Course Schedule",
+  subtitle: "#207 · Medium · Kahn's algorithm — can we finish if the graph is a DAG?",
+  url: "https://leetcode.com/problems/course-schedule/",
+  code: [
+    "function canFinish(numCourses, prerequisites) {",
+    "  // build adj list + indegree[] from edges prereq -> course",
+    "  const queue = [];",
+    "  for (let c = 0; c < numCourses; c++)",
+    "    if (indegree[c] === 0) queue.push(c);   // no prereqs",
+    "  let completed = 0;",
+    "  while (queue.length) {",
+    "    const course = queue.shift();           // take a 0-indegree course",
+    "    completed++;",
+    "    for (const next of adj[course])",
+    "      if (--indegree[next] === 0) queue.push(next); // unlocked",
+    "  }",
+    "  return completed === numCourses;          // all done => no cycle",
+    "}"
+  ],
+  build: function (rec) {
+    var numCourses = 4;
+    var prerequisites = [[1, 0], [2, 0], [3, 1], [3, 2]];
+
+    var adj = [];
+    for (var i = 0; i < numCourses; i++) adj.push([]);
+    var indegree = new Array(numCourses);
+    for (var k = 0; k < numCourses; k++) indegree[k] = 0;
+    for (var p = 0; p < prerequisites.length; p++) {
+      var course = prerequisites[p][0], prereq = prerequisites[p][1];
+      adj[prereq].push(course);
+      indegree[course]++;
+    }
+
+    var adjStr = adj.map(function (a, i) { return i + "→[" + a.join(",") + "]"; }).join("  ");
+
+    rec.step({
+      line: 2, type: "array", values: indegree.slice(),
+      note: "Edges prereq→course: " + adjStr + ". The array is indegree[course] = number of prereqs still pending. 0 means ready to take.",
+      aux: { queue: "[]", completed: 0 }
+    });
+
+    var queue = [];
+    for (var c = 0; c < numCourses; c++) {
+      if (indegree[c] === 0) queue.push(c);
+    }
+    rec.step({
+      line: 5, type: "array", values: indegree.slice(),
+      hi: queue.slice(),
+      note: "Seed the queue with every course whose indegree is 0 — here only course 0 has no prerequisites.",
+      aux: { queue: "[" + queue.join(",") + "]", completed: 0 }
+    });
+
+    var completed = 0;
+    var head = 0;
+    while (head < queue.length) {
+      var cur = queue[head++];
+      completed++;
+      rec.step({
+        line: 9, type: "array", values: indegree.slice(),
+        pointers: { take: cur }, hi: [cur],
+        note: "Take course " + cur + " (indegree 0). Mark it completed (" + completed + "/" + numCourses + "), then relax everything it unlocks.",
+        aux: { queue: "[" + queue.slice(head).join(",") + "]", completed: completed }
+      });
+      var outs = adj[cur];
+      for (var o = 0; o < outs.length; o++) {
+        var nx = outs[o];
+        indegree[nx]--;
+        var unlocked = indegree[nx] === 0;
+        if (unlocked) queue.push(nx);
+        rec.step({
+          line: 11, type: "array", values: indegree.slice(),
+          pointers: { take: cur, dep: nx }, hi: [nx], dim: [cur],
+          note: "Course " + cur + " unlocks " + nx + ": decrement indegree[" + nx + "] → " + indegree[nx] +
+            (unlocked ? ". Now 0 → enqueue " + nx + "." : ". Still > 0, stays blocked."),
+          aux: { queue: "[" + queue.slice(head).join(",") + "]", completed: completed }
+        });
+      }
+    }
+
+    rec.step({
+      line: 13, type: "array", values: indegree.slice(),
+      note: "Completed " + completed + " of " + numCourses + " courses with no leftovers → the graph is acyclic, so all courses can be finished.",
+      aux: { queue: "[]", completed: completed, answer: (completed === numCourses) }
+    });
+  }
+});
+</script>
+</body>
+</html>

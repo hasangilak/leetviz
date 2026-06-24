@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Word Search — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Word Search",
+  subtitle: "#79 · Medium · DFS backtracking on a grid — mark visited with '#', restore on the way out",
+  url: "https://leetcode.com/problems/word-search/",
+  code: [
+    "function exist(board, word) {",
+    "  const dfs = (r, c, i) => {",
+    "    if (i === word.length) return true;",
+    "    if (r < 0 || c < 0 || r >= rows || c >= cols ||",
+    "        board[r][c] !== word[i]) return false;",
+    "    const saved = board[r][c];",
+    "    board[r][c] = '#';            // mark visited",
+    "    const found =",
+    "      dfs(r+1, c, i+1) || dfs(r-1, c, i+1) ||",
+    "      dfs(r, c+1, i+1) || dfs(r, c-1, i+1);",
+    "    board[r][c] = saved;          // restore (backtrack)",
+    "    return found;",
+    "  };",
+    "  for (let r = 0; r < rows; r++)",
+    "    for (let c = 0; c < cols; c++)",
+    "      if (dfs(r, c, 0)) return true;",
+    "  return false;",
+    "}"
+  ],
+  build: function (rec) {
+    var board = [
+      ["A", "B", "C", "E"],
+      ["S", "F", "C", "S"],
+      ["A", "D", "E", "E"]
+    ];
+    var word = "ABCCED";
+    var rows = board.length, cols = board[0].length;
+
+    // path: the cells (r,c) currently on the DFS stack (highlighted)
+    var path = [];
+
+    rec.step({
+      line: 16, type: "grid", data: board,
+      note: "Look for \"ABCCED\" as a path of 4-directionally adjacent cells, each used once. Start scanning cells; the first that matches 'A' is (0,0).",
+      aux: { word: word, matched: "" }
+    });
+
+    var dfs = function (r, c, i) {
+      // success: matched all chars
+      if (i === word.length) {
+        rec.step({
+          line: 3, type: "grid", data: board,
+          hi: path.slice(),
+          note: "i = " + i + " = word.length → every character matched. The full path spells \"" + word + "\". Return true!",
+          aux: { word: word, matched: word, found: "✓ true" }
+        });
+        return true;
+      }
+
+      // out of bounds, mismatch, or already visited ('#')
+      if (r < 0 || c < 0 || r >= rows || c >= cols || board[r][c] !== word[i]) {
+        var got = (r < 0 || c < 0 || r >= rows || c >= cols)
+          ? "off-grid"
+          : (board[r][c] === "#" ? "'#' (already on path)" : "'" + board[r][c] + "'");
+        rec.step({
+          line: 5, type: "grid", data: board,
+          hi: path.slice(), cur: (r >= 0 && c >= 0 && r < rows && c < cols) ? { r: r, c: c } : null,
+          note: "Try (" + r + "," + c + "): need word[" + i + "] = '" + word[i] + "', but found " + got + " → dead end, return false.",
+          aux: { word: word, matched: word.slice(0, i) }
+        });
+        return false;
+      }
+
+      // match: mark visited, then explore neighbours
+      var saved = board[r][c];
+      board[r][c] = "#";
+      path.push({ r: r, c: c });
+      rec.step({
+        line: 7, type: "grid", data: board,
+        cur: { r: r, c: c }, hi: path.slice(),
+        note: "(" + r + "," + c + ") = '" + saved + "' matches word[" + i + "] = '" + word[i + 0] + "'. Mark it '#' (visited for this path) and explore the four neighbours.",
+        aux: { word: word, matched: word.slice(0, i + 1) }
+      });
+
+      var found =
+        dfs(r + 1, c, i + 1) ||
+        dfs(r - 1, c, i + 1) ||
+        dfs(r, c + 1, i + 1) ||
+        dfs(r, c - 1, i + 1);
+
+      // restore (backtrack)
+      board[r][c] = saved;
+      path.pop();
+      if (!found) {
+        rec.step({
+          line: 11, type: "grid", data: board,
+          hi: path.slice(),
+          note: "No neighbour of (" + r + "," + c + ") completes the word → restore '" + saved + "' (backtrack) and return false.",
+          aux: { word: word, matched: word.slice(0, i) }
+        });
+      }
+      return found;
+    };
+
+    var ok = false;
+    for (var r = 0; r < rows && !ok; r++) {
+      for (var c = 0; c < cols && !ok; c++) {
+        if (board[r][c] === word[0]) { // first matching start is (0,0)
+          if (dfs(r, c, 0)) ok = true;
+        }
+      }
+    }
+
+    rec.step({
+      line: 16, type: "grid", data: board,
+      note: ok
+        ? "Found it — \"" + word + "\" exists in the grid. exist() returns true."
+        : "No path spells \"" + word + "\". exist() returns false.",
+      aux: { word: word, result: ok ? "true" : "false" }
+    });
+  }
+});
+</script>
+</body>
+</html>

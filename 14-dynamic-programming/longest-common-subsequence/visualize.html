@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Longest Common Subsequence — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Longest Common Subsequence",
+  subtitle: "#1143 · Medium · 2-D string DP — match jumps the diagonal",
+  url: "https://leetcode.com/problems/longest-common-subsequence/",
+  code: [
+    "function longestCommonSubsequence(a, b) {",
+    "  const dp = grid(a.length + 1, b.length + 1);  // base row/col = 0",
+    "  for (let i = 1; i <= a.length; i++)",
+    "    for (let j = 1; j <= b.length; j++)",
+    "      if (a[i - 1] === b[j - 1])",
+    "        dp[i][j] = dp[i - 1][j - 1] + 1;",
+    "      else",
+    "        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);",
+    "  return dp[a.length][b.length];",
+    "}"
+  ],
+  build: function (rec) {
+    var a = "abcde", b = "ace";
+    var m = a.length, n = b.length;
+    var dp = [];
+    for (var i = 0; i <= m; i++) { dp.push([]); for (var j = 0; j <= n; j++) dp[i].push(null); }
+    for (var i2 = 0; i2 <= m; i2++) dp[i2][0] = 0;
+    for (var j2 = 0; j2 <= n; j2++) dp[0][j2] = 0;
+
+    var rL = ["∅"].concat(a.split(""));
+    var cL = ["∅"].concat(b.split(""));
+    var grid = function () { return dp.map(function (row) { return row.slice(); }); };
+
+    rec.step({
+      line: 2, type: "grid", data: grid(), rLabels: rL, cLabels: cL, corner: "",
+      note: "dp[i][j] = LCS length of prefixes a[0..i) and b[0..j). Base row & column are 0 (an empty prefix shares nothing). Rows = \"" + a + "\", columns = \"" + b + "\".",
+      aux: { a: a, b: b }
+    });
+
+    for (var r = 1; r <= m; r++) {
+      for (var c = 1; c <= n; c++) {
+        var match = a[r - 1] === b[c - 1];
+        if (match) dp[r][c] = dp[r - 1][c - 1] + 1;
+        else dp[r][c] = Math.max(dp[r - 1][c], dp[r][c - 1]);
+        rec.step({
+          line: match ? 6 : 8, type: "grid", data: grid(), rLabels: rL, cLabels: cL, corner: "",
+          cur: { r: r, c: c },
+          hi: match ? [{ r: r - 1, c: c - 1 }] : [{ r: r - 1, c: c }, { r: r, c: c - 1 }],
+          note: match
+            ? ("'" + a[r - 1] + "' = '" + b[c - 1] + "' → extend the common run: dp[" + r + "][" + c + "] = ↖" + dp[r - 1][c - 1] + " + 1 = " + dp[r][c] + ".")
+            : ("'" + a[r - 1] + "' ≠ '" + b[c - 1] + "' → drop one char, keep the better: max( ↑" + dp[r - 1][c] + ", ←" + dp[r][c - 1] + " ) = " + dp[r][c] + "."),
+          aux: { rowChar: a[r - 1], colChar: b[c - 1], cell: dp[r][c] }
+        });
+      }
+    }
+
+    rec.step({
+      line: 9, type: "grid", data: grid(), rLabels: rL, cLabels: cL, corner: "",
+      cur: { r: m, c: n },
+      note: "Bottom-right cell is the answer: LCS length = " + dp[m][n] + " (the subsequence \"ace\").",
+      aux: { answer: dp[m][n] }
+    });
+  }
+});
+</script>
+</body>
+</html>

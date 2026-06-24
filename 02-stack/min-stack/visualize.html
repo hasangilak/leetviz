@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Min Stack — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Min Stack",
+  subtitle: "#155 · Medium · a parallel 'min so far' stack keeps getMin O(1)",
+  url: "https://leetcode.com/problems/min-stack/",
+  code: [
+    "class MinStack {",
+    "  stack = []; mins = [];",
+    "  push(val) {",
+    "    this.stack.push(val);",
+    "    const m = this.mins.length === 0",
+    "      ? val : Math.min(val, this.mins.at(-1));",
+    "    this.mins.push(m);",
+    "  }",
+    "  pop()    { this.stack.pop(); this.mins.pop(); }",
+    "  top()    { return this.stack.at(-1); }",
+    "  getMin() { return this.mins.at(-1); }",
+    "}"
+  ],
+  build: function (rec) {
+    var stack = [], mins = [];
+    var show = function (a) { return a.length ? "[ " + a.join(" ") + "  ←top" : "(empty)"; };
+
+    var push = function (val) {
+      stack.push(val);
+      var m = mins.length === 0 ? val : Math.min(val, mins[mins.length - 1]);
+      mins.push(m);
+      rec.step({
+        line: 7, type: "array", values: stack.slice(), pointers: { top: stack.length - 1 }, hi: [stack.length - 1],
+        note: "push(" + val + "): push " + val + " onto values, and push min(" + val + ", prev min) = " + m + " onto mins. The two stacks stay in lockstep.",
+        aux: { op: "push(" + val + ")", mins: show(mins) }
+      });
+    };
+    var getMin = function () {
+      var m = mins[mins.length - 1];
+      rec.step({
+        line: 11, type: "array", values: stack.slice(), pointers: { top: stack.length - 1 },
+        note: "getMin() → top of the mins stack = " + m + ". O(1), no scanning of the value stack.",
+        aux: { op: "getMin()", mins: show(mins), result: m }
+      });
+    };
+    var pop = function () {
+      var v = stack.pop(); mins.pop();
+      rec.step({
+        line: 8, type: "array", values: stack.slice(), pointers: stack.length ? { top: stack.length - 1 } : {},
+        note: "pop(): remove " + v + " from BOTH stacks together. Popping mins too restores the previous minimum automatically.",
+        aux: { op: "pop()", mins: show(mins) }
+      });
+    };
+    var top = function () {
+      var v = stack[stack.length - 1];
+      rec.step({
+        line: 9, type: "array", values: stack.slice(), pointers: { top: stack.length - 1 }, hi: [stack.length - 1],
+        note: "top() → top of the value stack = " + v + ".",
+        aux: { op: "top()", mins: show(mins), result: v }
+      });
+    };
+
+    rec.step({
+      line: 2, type: "array", values: [], pointers: {},
+      note: "Both stacks start empty. Trace: push(-2), push(0), push(-3), getMin, pop, top, getMin.",
+      aux: { op: "(init)", mins: show(mins) }
+    });
+    push(-2);
+    push(0);
+    push(-3);
+    getMin();   // -3
+    pop();      // removes -3
+    top();      // 0
+    getMin();   // -2
+  }
+});
+</script>
+</body>
+</html>

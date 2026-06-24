@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Implement Trie (Prefix Tree) — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Implement Trie (Prefix Tree)",
+  subtitle: "#208 · Medium · a tree of characters; green ring = end-of-word",
+  url: "https://leetcode.com/problems/implement-trie-prefix-tree/",
+  code: [
+    "insert(word):  walk/create a path of nodes, flag the last node",
+    "search(word):  node = walk(word); return node && node.isEnd",
+    "startsWith(p): return walk(p) !== null",
+    "walk(s): follow chars; null if any child is missing",
+    "  for (ch of s) { next = node.children.get(ch);",
+    "                  if (!next) return null; node = next; }"
+  ],
+  build: function (rec) {
+    // trie node: { ch, children: {char->node}, isEnd }, root.ch = "•"
+    var root = { ch: "•", children: {}, isEnd: false };
+    var current = null; // node highlighted as "current"
+
+    // Build the renderer tree from the live trie each step.
+    function mk(n) {
+      var st = null;
+      if (n === current) st = "current";
+      else if (n.isEnd) st = "visited"; // green ring = end-of-word marker
+      var kids = Object.keys(n.children).sort().map(function (c) { return mk(n.children[c]); });
+      return { label: n.ch, state: st, children: kids };
+    }
+    function snap(line, note, extraAux) {
+      var aux = {};
+      if (extraAux) for (var key in extraAux) aux[key] = extraAux[key];
+      rec.step({ line: line, type: "tree", root: mk(root), note: note, aux: aux });
+    }
+
+    function insert(word) {
+      current = root;
+      snap(1, "insert(\"" + word + "\"): start at the root.");
+      var node = root;
+      for (var i = 0; i < word.length; i++) {
+        var ch = word[i];
+        if (!node.children[ch]) {
+          node.children[ch] = { ch: ch, children: {}, isEnd: false };
+        }
+        node = node.children[ch];
+        current = node;
+        snap(1, "insert(\"" + word + "\"): char '" + ch + "' → step into (creating if needed) the child node '" + ch + "'.");
+      }
+      node.isEnd = true;
+      current = null;
+      snap(1, "insert(\"" + word + "\"): reached the end — mark node '" + node.ch + "' as end-of-word (green ring).", { result: "\"" + word + "\" stored" });
+    }
+
+    // returns the final node or null
+    function walk(s, line, label) {
+      current = root;
+      snap(line, label + ": start at the root, follow each character.");
+      var node = root;
+      for (var i = 0; i < s.length; i++) {
+        var ch = s[i];
+        var next = node.children[ch];
+        if (!next) {
+          current = node;
+          snap(5, label + ": no child '" + ch + "' from here → path breaks, walk returns null.", { found: "no" });
+          return null;
+        }
+        node = next;
+        current = node;
+        snap(5, label + ": char '" + ch + "' → move into child '" + ch + "'.");
+      }
+      return node;
+    }
+
+    function search(word) {
+      var node = walk(word, 2, "search(\"" + word + "\")");
+      if (node === null) {
+        snap(2, "search(\"" + word + "\") → false (no such path).", { search: false });
+        current = null;
+        return;
+      }
+      current = node;
+      var ok = node.isEnd;
+      snap(2, "search(\"" + word + "\"): path exists; is node '" + node.ch + "' an end-of-word? " + (ok ? "Yes." : "No (it's only a prefix).") + " → " + ok, { search: ok });
+      current = null;
+    }
+
+    function startsWith(prefix) {
+      var node = walk(prefix, 3, "startsWith(\"" + prefix + "\")");
+      if (node === null) {
+        snap(3, "startsWith(\"" + prefix + "\") → false (path breaks).", { startsWith: false });
+        current = null;
+        return;
+      }
+      current = node;
+      snap(3, "startsWith(\"" + prefix + "\"): the whole path exists (end-of-word flag irrelevant) → true.", { startsWith: true });
+      current = null;
+    }
+
+    insert("apple");
+    insert("app");
+    search("app");    // true (now stored)
+    search("apple");  // true
+    startsWith("ap"); // true
+  }
+});
+</script>
+</body>
+</html>

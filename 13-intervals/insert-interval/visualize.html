@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Insert Interval — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Insert Interval",
+  subtitle: "#57 · Medium · three-phase sweep — copy before, absorb overlap, copy after",
+  url: "https://leetcode.com/problems/insert-interval/",
+  code: [
+    "function insert(intervals, newInterval) {",
+    "  const result = [];",
+    "  let [newStart, newEnd] = newInterval;",
+    "  let i = 0; const n = intervals.length;",
+    "  while (i < n && intervals[i][1] < newStart) {   // before",
+    "    result.push(intervals[i]); i++;",
+    "  }",
+    "  while (i < n && intervals[i][0] <= newEnd) {     // overlap",
+    "    newStart = Math.min(newStart, intervals[i][0]);",
+    "    newEnd = Math.max(newEnd, intervals[i][1]); i++;",
+    "  }",
+    "  result.push([newStart, newEnd]);",
+    "  while (i < n) { result.push(intervals[i]); i++; } // after",
+    "  return result;",
+    "}"
+  ],
+  build: function (rec) {
+    var intervals = [[1, 2], [3, 5], [6, 7], [8, 10], [12, 16]];
+    var newInterval = [4, 8];
+    var fmt = function (iv) { return "[" + iv[0] + "," + iv[1] + "]"; };
+    var cells = function () { return intervals.map(fmt); };
+
+    var result = [];
+    var newStart = newInterval[0], newEnd = newInterval[1];
+
+    var auxOf = function () {
+      var r = result.map(fmt);
+      return {
+        result: r.length ? r.join(" ") : "[]",
+        "new": fmt([newStart, newEnd])
+      };
+    };
+
+    rec.step({
+      line: 2, type: "array", values: cells(), pointers: {},
+      note: "Insert " + fmt(newInterval) + " into sorted, non-overlapping intervals. Three phases: copy intervals before it, absorb overlaps to widen it, copy intervals after.",
+      aux: auxOf()
+    });
+
+    var i = 0, n = intervals.length;
+
+    // 1) intervals entirely before the new one
+    while (i < n && intervals[i][1] < newStart) {
+      result.push(intervals[i]);
+      rec.step({
+        line: 5, type: "array", values: cells(), pointers: { i: i }, hi: [i],
+        note: "BEFORE: end " + intervals[i][1] + " < newStart " + newStart + " → copy " + fmt(intervals[i]) + " unchanged.",
+        aux: auxOf()
+      });
+      i++;
+    }
+
+    // 2) absorb all overlapping intervals into [newStart, newEnd]
+    while (i < n && intervals[i][0] <= newEnd) {
+      newStart = Math.min(newStart, intervals[i][0]);
+      newEnd = Math.max(newEnd, intervals[i][1]);
+      rec.step({
+        line: 9, type: "array", values: cells(), pointers: { i: i }, hi: [i],
+        note: "OVERLAP: start " + intervals[i][0] + " <= newEnd → absorb " + fmt(intervals[i]) + ", widening the new interval to " + fmt([newStart, newEnd]) + ".",
+        aux: auxOf()
+      });
+      i++;
+    }
+    result.push([newStart, newEnd]);
+    rec.step({
+      line: 12, type: "array", values: cells(), pointers: { i: i }, hi: i < n ? [i] : [],
+      note: "Overlap phase done → push the merged new interval " + fmt([newStart, newEnd]) + " into the result.",
+      aux: auxOf()
+    });
+
+    // 3) intervals entirely after the new one
+    while (i < n) {
+      result.push(intervals[i]);
+      rec.step({
+        line: 13, type: "array", values: cells(), pointers: { i: i }, hi: [i],
+        note: "AFTER: " + fmt(intervals[i]) + " starts past the new interval → copy unchanged.",
+        aux: auxOf()
+      });
+      i++;
+    }
+
+    rec.step({
+      line: 14, type: "array", values: cells(), pointers: {},
+      note: "All intervals processed → return the result.",
+      aux: auxOf()
+    });
+  }
+});
+</script>
+</body>
+</html>

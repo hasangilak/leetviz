@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Remove Nth Node From End of List — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Remove Nth Node From End of List",
+  subtitle: "#19 · Medium · one pass — open an n-gap with fast, then move both until fast hits the end",
+  url: "https://leetcode.com/problems/remove-nth-node-from-end-of-list/",
+  code: [
+    "function removeNthFromEnd(head, n) {",
+    "  const dummy = new ListNode(0, head);",
+    "  let fast = dummy;",
+    "  let slow = dummy;",
+    "  for (let i = 0; i < n; i++) fast = fast.next;",
+    "  while (fast.next !== null) {",
+    "    fast = fast.next;",
+    "    slow = slow.next;",
+    "  }",
+    "  slow.next = slow.next.next;",
+    "  return dummy.next;",
+    "}"
+  ],
+  build: function (rec) {
+    // [1,2,3,4,5], n = 2  ->  remove the 4 (2nd from end)  ->  [1,2,3,5]
+    var n = 2;
+    var vals = ["d", 1, 2, 3, 4, 5]; // id 0 = dummy
+    var nodes = vals.map(function (v, i) { return { id: i, val: v }; });
+    var next = {};
+    nodes.forEach(function (nd, i) { next[nd.id] = i + 1 < nodes.length ? i + 1 : null; });
+    var arrows = function () { return nodes.map(function (nd) { return { from: nd.id, to: next[nd.id] }; }); };
+    var label = function (id) { return id == null ? "null" : String(vals[id]); };
+
+    var fast = 0, slow = 0; // both at dummy
+
+    rec.step({
+      line: 4, type: "list", nodes: nodes, arrows: arrows(),
+      pointers: { fast: fast, slow: slow }, hi: [slow],
+      note: "A dummy 'd' sits before the head so removing the real head is not a special case. fast & slow both start at dummy."
+    });
+
+    // PHASE 1: open a gap of n nodes between fast and slow
+    for (var k = 0; k < n; k++) {
+      fast = next[fast];
+      rec.step({
+        line: 5, type: "list", nodes: nodes, arrows: arrows(),
+        pointers: { fast: fast, slow: slow }, hi: [fast],
+        note: "Phase 1 (open the gap): fast advances to " + label(fast) + ". After this loop fast is n=" + n + " nodes ahead of slow."
+      });
+    }
+
+    // PHASE 2: advance both until fast is the last node
+    while (next[fast] !== null) {
+      fast = next[fast];
+      slow = next[slow];
+      rec.step({
+        line: 7, type: "list", nodes: nodes, arrows: arrows(),
+        pointers: { fast: fast, slow: slow }, hi: [slow],
+        note: "Phase 2 (move together): fast → " + label(fast) + ", slow → " + label(slow) + ". The n-gap stays fixed."
+      });
+    }
+
+    rec.step({
+      line: 9, type: "list", nodes: nodes, arrows: arrows(),
+      pointers: { fast: fast, slow: slow }, hi: [next[slow]],
+      note: "fast is the last node, so slow (" + label(slow) + ") sits exactly one node BEFORE the target " + label(next[slow]) + "."
+    });
+
+    // unlink: rebuild arrows so the removed node is skipped
+    var removed = next[slow];
+    next[slow] = next[removed];
+    rec.step({
+      line: 10, type: "list", nodes: nodes, arrows: arrows(),
+      pointers: { slow: slow }, hi: [slow],
+      note: "slow.next = slow.next.next → unlink " + label(removed) + ". " + label(slow) + " now points straight to " + label(next[slow]) + "."
+    });
+
+    rec.step({
+      line: 11, type: "list", nodes: nodes, arrows: arrows(),
+      pointers: { head: next[0] },
+      aux: { result: "1,2,3,5" },
+      note: "Return dummy.next → [1,2,3,5]. (The skipped node 4 is now unreachable.)"
+    });
+  }
+});
+</script>
+</body>
+</html>

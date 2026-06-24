@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Last Stone Weight — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Last Stone Weight",
+  subtitle: "#1046 · Easy · MAX-heap; smash the two heaviest stones until ≤ 1 remains",
+  url: "https://leetcode.com/problems/last-stone-weight/",
+  code: [
+    "for (const s of stones) maxHeap.push(s);",
+    "while (maxHeap.size() > 1) {",
+    "  const heaviest = maxHeap.pop();",
+    "  const next = maxHeap.pop();",
+    "  if (heaviest !== next)",
+    "    maxHeap.push(heaviest - next);",
+    "}",
+    "return maxHeap.size() === 1 ? maxHeap.peek() : 0;"
+  ],
+  build: function (rec) {
+    var stones = [2, 7, 4, 1, 8, 1];
+
+    // --- max-heap (a > b => largest floats to root), mirrors solution.ts ---
+    var data = [];
+    function less(a, b) { return a > b; } // "less" = higher priority = larger
+    function bubbleUp(i) {
+      while (i > 0) {
+        var p = (i - 1) >> 1;
+        if (!less(data[i], data[p])) break;
+        var t = data[i]; data[i] = data[p]; data[p] = t;
+        i = p;
+      }
+    }
+    function bubbleDown() {
+      var i = 0, n = data.length;
+      while (true) {
+        var best = i, l = 2 * i + 1, r = 2 * i + 2;
+        if (l < n && less(data[l], data[best])) best = l;
+        if (r < n && less(data[r], data[best])) best = r;
+        if (best === i) break;
+        var t = data[i]; data[i] = data[best]; data[best] = t;
+        i = best;
+      }
+    }
+    function push(v) { data.push(v); bubbleUp(data.length - 1); }
+    function pop() {
+      var top = data[0], last = data.pop();
+      if (last !== undefined && data.length > 0) { data[0] = last; bubbleDown(); }
+      return top;
+    }
+
+    function snap(line, note, hi, extraAux) {
+      var aux = { stones: data.length };
+      if (extraAux) for (var key in extraAux) aux[key] = extraAux[key];
+      rec.step({
+        line: line, type: "array",
+        values: data.slice(),
+        hi: hi || [],
+        note: note, aux: aux
+      });
+    }
+
+    // build the heap
+    for (var i = 0; i < stones.length; i++) push(stones[i]);
+    snap(1, "Push all stones into a MAX-heap: [" + data.join(", ") + "]. The heaviest stone is always at index 0.", [0]);
+
+    var round = 1;
+    while (data.length > 1) {
+      snap(2, "Round " + round + ": more than one stone remains — smash the two heaviest. The top two by priority are " + data[0] + " and the larger of its children.", [0]);
+      var heaviest = pop();
+      snap(3, "Pop the heaviest = " + heaviest + ". Heap re-heapifies to [" + data.join(", ") + "].", data.length ? [0] : [], { heaviest: heaviest });
+      var next = pop();
+      snap(4, "Pop the next heaviest = " + next + ". Heap is now [" + data.join(", ") + "].", data.length ? [0] : [], { heaviest: heaviest, next: next });
+      if (heaviest !== next) {
+        var diff = heaviest - next;
+        snap(5, "They differ: smash result = " + heaviest + " − " + next + " = " + diff + ". Push the survivor back.", [], { smash: heaviest + " − " + next + " = " + diff });
+        push(diff);
+        snap(6, "After pushing " + diff + ": heap = [" + data.join(", ") + "].", [0], { smash: diff });
+      } else {
+        snap(5, "Equal weights (" + heaviest + " = " + next + "): both stones are destroyed, nothing pushed back.", [], { smash: 0 });
+      }
+      round++;
+    }
+
+    var ans = data.length === 1 ? data[0] : 0;
+    snap(8, "≤ 1 stone left. Answer = " + (data.length === 1 ? "the last stone = " + ans : "no stones, so 0") + ".", data.length ? [0] : [], { answer: ans });
+  }
+});
+</script>
+</body>
+</html>

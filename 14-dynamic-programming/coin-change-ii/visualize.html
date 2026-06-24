@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coin Change II — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Coin Change II",
+  subtitle: "#518 · Medium · 1-D counting DP — combinations, coins on the outside",
+  url: "https://leetcode.com/problems/coin-change-ii/",
+  code: [
+    "function change(amount, coins) {",
+    "  const dp = new Array(amount + 1).fill(0);",
+    "  dp[0] = 1;",
+    "  for (const coin of coins) {",
+    "    for (let a = coin; a <= amount; a++) {",
+    "      dp[a] += dp[a - coin];",
+    "    }",
+    "  }",
+    "  return dp[amount];",
+    "}"
+  ],
+  build: function (rec) {
+    var amount = 5, coins = [1, 2, 5];
+    var dp = []; for (var k = 0; k <= amount; k++) dp.push(0);
+    dp[0] = 1;
+    var show = function () { return dp.slice(); };
+
+    rec.step({
+      line: 3, type: "array", values: show(), hi: [0],
+      note: "dp[a] = number of distinct combinations that sum to a. Base: dp[0] = 1 (one way to make 0 — take no coins). Coins are processed ONE AT A TIME so every unordered combination is counted once.",
+      aux: { coins: "[" + coins.join(", ") + "]" }
+    });
+
+    for (var ci = 0; ci < coins.length; ci++) {
+      var coin = coins[ci];
+      rec.step({
+        line: 4, type: "array", values: show(),
+        note: "Now allow the coin " + coin + ". Sweep amounts a = " + coin + " … " + amount + ", adding the combinations that finish with a " + coin + ": dp[a] += dp[a−" + coin + "].",
+        aux: { coin: coin, combos: dp[amount] }
+      });
+      for (var a = coin; a <= amount; a++) {
+        var addend = dp[a - coin];
+        dp[a] += addend;
+        rec.step({
+          line: 6, type: "array", values: show(),
+          pointers: { a: a, "a−coin": a - coin },
+          hi: [a], dim: [a - coin],
+          note: "dp[" + a + "] += dp[" + (a - coin) + "] (= " + addend + "): every way to make " + (a - coin) + " becomes a way to make " + a + " by adding one " + coin + "-coin. dp[" + a + "] is now " + dp[a] + ".",
+          aux: { coin: coin, "dp[a−coin]": addend, "dp[a]": dp[a] }
+        });
+      }
+    }
+
+    rec.step({
+      line: 9, type: "array", values: show(), hi: [amount],
+      note: "Answer = dp[" + amount + "] = " + dp[amount] + " combinations: {5}, {2+2+1}, {2+1+1+1}, {1×5}.",
+      aux: { answer: dp[amount] }
+    });
+  }
+});
+</script>
+</body>
+</html>

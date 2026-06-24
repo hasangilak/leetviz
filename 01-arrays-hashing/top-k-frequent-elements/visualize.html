@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Top K Frequent Elements — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Top K Frequent Elements",
+  subtitle: "#347 · Medium · count, then bucket-sort by frequency",
+  url: "https://leetcode.com/problems/top-k-frequent-elements/",
+  code: [
+    "function topKFrequent(nums, k) {",
+    "  const freq = new Map();",
+    "  for (const n of nums) freq.set(n, (freq.get(n) ?? 0) + 1);",
+    "  const buckets = Array.from({length: nums.length + 1}, () => []);",
+    "  for (const [num, c] of freq) buckets[c].push(num);",
+    "  const result = [];",
+    "  for (let f = buckets.length - 1; f >= 0 && result.length < k; f--)",
+    "    for (const num of buckets[f]) {",
+    "      result.push(num);",
+    "      if (result.length === k) break;",
+    "    }",
+    "  return result;",
+    "}"
+  ],
+  build: function (rec) {
+    var nums = [1, 1, 1, 2, 2, 3], k = 2;
+    var freq = {};                           // value -> count
+    var fmtFreq = function () {
+      var parts = [];
+      Object.keys(freq).forEach(function (key) { parts.push(key + ":" + freq[key]); });
+      return "{" + parts.join(", ") + "}";
+    };
+
+    // Phase 1 — count occurrences.
+    rec.step({ line: 2, type: "array", values: nums, pointers: {}, note: "Phase 1: count how many times each value appears.", aux: { freq: fmtFreq() } });
+    for (var i = 0; i < nums.length; i++) {
+      var n = nums[i];
+      freq[n] = (freq[n] || 0) + 1;
+      rec.step({ line: 3, type: "array", values: nums, pointers: { i: i }, hi: [i], note: "Saw " + n + " → its count is now " + freq[n] + ".", aux: { freq: fmtFreq() } });
+    }
+
+    // Phase 2 — bucket by frequency.
+    var buckets = [];
+    for (var b = 0; b <= nums.length; b++) buckets.push([]);
+    Object.keys(freq).forEach(function (key) { buckets[freq[key]].push(Number(key)); });
+    var bucketView = function () {
+      return buckets.map(function (arr) { return arr.length ? "[" + arr.join(",") + "]" : "·"; });
+    };
+    rec.step({ line: 4, type: "array", values: bucketView(), pointers: {}, note: "Phase 2: bucket[f] (index row below = frequency f) holds the values seen exactly f times. The rightmost non-empty bucket is the most frequent.", aux: { freq: fmtFreq() } });
+
+    // Phase 3 — collect top k, scanning high frequency → low.
+    var result = [];
+    for (var f = buckets.length - 1; f >= 0 && result.length < k; f--) {
+      if (buckets[f].length === 0) continue;
+      for (var bi = 0; bi < buckets[f].length; bi++) {
+        var num = buckets[f][bi];
+        result.push(num);
+        rec.step({ line: 9, type: "array", values: bucketView(), pointers: { f: f }, hi: [f], note: "Bucket f=" + f + " is non-empty → pick " + num + " (appears " + f + " times). Collected " + result.length + " of " + k + ".", aux: { picked: "[" + result.join(",") + "]" } });
+        if (result.length === k) break;
+      }
+    }
+    rec.step({ line: 11, type: "array", values: bucketView(), pointers: {}, note: "Collected k=" + k + " values → answer is [" + result.join(", ") + "].", aux: { answer: "[" + result.join(", ") + "]" } });
+  }
+});
+</script>
+</body>
+</html>

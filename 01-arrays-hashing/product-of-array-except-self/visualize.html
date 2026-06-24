@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Product of Array Except Self — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Product of Array Except Self",
+  subtitle: "#238 · Medium · prefix pass × suffix pass, no division",
+  url: "https://leetcode.com/problems/product-of-array-except-self/",
+  code: [
+    "function productExceptSelf(nums) {",
+    "  const answer = new Array(nums.length).fill(1);",
+    "  let prefix = 1;",
+    "  for (let i = 0; i < nums.length; i++) {",
+    "    answer[i] = prefix;",
+    "    prefix *= nums[i];",
+    "  }",
+    "  let suffix = 1;",
+    "  for (let i = nums.length - 1; i >= 0; i--) {",
+    "    answer[i] *= suffix;",
+    "    suffix *= nums[i];",
+    "  }",
+    "  return answer;",
+    "}"
+  ],
+  build: function (rec) {
+    var nums = [1, 2, 3, 4];
+    var n = nums.length;
+    var answer = [];
+    for (var z = 0; z < n; z++) answer.push(1);
+    rec.step({ line: 2, type: "array", values: answer, pointers: {}, note: "answer[i] = product of every element except nums[i]. Start the output filled with 1s. nums = [" + nums.join(", ") + "].", aux: { nums: "[" + nums.join(",") + "]" } });
+
+    // Pass 1 — left→right prefix products.
+    var prefix = 1;
+    for (var i = 0; i < n; i++) {
+      answer[i] = prefix;
+      rec.step({ line: 5, type: "array", values: answer, pointers: { i: i }, hi: [i], dim: [], note: "Left pass: answer[" + i + "] = prefix = " + prefix + " (product of everything to the LEFT of index " + i + ").", aux: { prefix: prefix, "nums[i]": nums[i] } });
+      prefix *= nums[i];
+      rec.step({ line: 6, type: "array", values: answer, pointers: { i: i }, hi: [i], note: "Fold nums[" + i + "]=" + nums[i] + " into the running prefix → prefix = " + prefix + ".", aux: { prefix: prefix } });
+    }
+
+    // Pass 2 — right→left suffix products.
+    var suffix = 1;
+    for (var j = n - 1; j >= 0; j--) {
+      answer[j] *= suffix;
+      rec.step({ line: 10, type: "array", values: answer, pointers: { j: j }, hi: [j], note: "Right pass: answer[" + j + "] *= suffix = " + suffix + " → " + answer[j] + " (now also includes everything to the RIGHT).", aux: { suffix: suffix, "nums[j]": nums[j] } });
+      suffix *= nums[j];
+      rec.step({ line: 11, type: "array", values: answer, pointers: { j: j }, hi: [j], note: "Fold nums[" + j + "]=" + nums[j] + " into the running suffix → suffix = " + suffix + ".", aux: { suffix: suffix } });
+    }
+    rec.step({ line: 13, type: "array", values: answer, pointers: {}, note: "Both passes done → answer = [" + answer.join(", ") + "].", aux: { answer: "[" + answer.join(",") + "]" } });
+  }
+});
+</script>
+</body>
+</html>

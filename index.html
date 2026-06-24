@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LeetCode in TypeScript — Visualizers</title>
+<link rel="stylesheet" href="viz/viz.css">
+<style>
+  .vz-app { max-width: 900px; }
+  .cat { margin: 26px 0 8px; color: var(--muted); font-size: 13px; letter-spacing: .04em; text-transform: uppercase; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+  .card { display: block; text-decoration: none; color: var(--text); background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 13px 15px; transition: all .15s; }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .card .t { font-weight: 600; font-size: 15px; }
+  .card .d { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .note { background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 6px; padding: 12px 16px; font-size: 14px; color: var(--muted); margin-top: 8px; }
+  code { font-family: var(--mono); color: var(--text); background: var(--panel2); padding: 1px 6px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="vz-app">
+  <div class="vz-head">
+    <h1 class="vz-title">🧩 Interactive Visualizers</h1>
+    <div class="vz-sub">56 algorithms, animated step by step. Watch the data move and follow the highlighted code line. Use ◀ / ▶ (or arrow keys) and ▶ Play.</div>
+  </div>
+
+  <div class="cat">Arrays Hashing</div>
+  <div class="grid">
+    <a class="card" href="01-arrays-hashing/contains-duplicate/visualize.html"><div class="t">Contains Duplicate</div><div class="d">#217 · Easy · hash set membership — first repeat wins</div></a>
+    <a class="card" href="01-arrays-hashing/group-anagrams/visualize.html"><div class="t">Group Anagrams</div><div class="d">#49 · Medium · bucket by a 26-letter count signature</div></a>
+    <a class="card" href="01-arrays-hashing/longest-consecutive-sequence/visualize.html"><div class="t">Longest Consecutive Sequence</div><div class="d">#128 · Medium · hash set, only count runs from their start</div></a>
+    <a class="card" href="01-arrays-hashing/product-of-array-except-self/visualize.html"><div class="t">Product of Array Except Self</div><div class="d">#238 · Medium · prefix pass × suffix pass, no division</div></a>
+    <a class="card" href="01-arrays-hashing/top-k-frequent-elements/visualize.html"><div class="t">Top K Frequent Elements</div><div class="d">#347 · Medium · count, then bucket-sort by frequency</div></a>
+    <a class="card" href="01-arrays-hashing/two-sum/visualize.html"><div class="t">Two Sum</div><div class="d">#1 · Easy · one-pass hash map — store value→index, look up the complement</div></a>
+  </div>
+
+  <div class="cat">Stack</div>
+  <div class="grid">
+    <a class="card" href="02-stack/daily-temperatures/visualize.html"><div class="t">Daily Temperatures</div><div class="d">#739 · Medium · monotonic stack of waiting days, resolved by a warmer day</div></a>
+    <a class="card" href="02-stack/min-stack/visualize.html"><div class="t">Min Stack</div><div class="d">#155 · Medium · a parallel 'min so far' stack keeps getMin O(1)</div></a>
+    <a class="card" href="02-stack/valid-parentheses/visualize.html"><div class="t">Valid Parentheses</div><div class="d">#20 · Easy · push openers, pop must match the closer</div></a>
+  </div>
+
+  <div class="cat">Linked List</div>
+  <div class="grid">
+    <a class="card" href="03-linked-list/add-two-numbers/visualize.html"><div class="t">Add Two Numbers</div><div class="d">#2 · Medium · grade-school addition with a carry, digits stored least-significant first</div></a>
+    <a class="card" href="03-linked-list/linked-list-cycle/visualize.html"><div class="t">Linked List Cycle</div><div class="d">#141 · Easy · Floyd's tortoise &amp; hare — slow +1, fast +2, they collide inside a loop</div></a>
+    <a class="card" href="03-linked-list/lru-cache/visualize.html"><div class="t">LRU Cache</div><div class="d">#146 · Medium · hash map + doubly linked list — every touch moves a key to the front, evict from the back</div></a>
+    <a class="card" href="03-linked-list/merge-two-sorted-lists/visualize.html"><div class="t">Merge Two Sorted Lists</div><div class="d">#21 · Easy · two pointers + dummy head — always append the smaller front node</div></a>
+    <a class="card" href="03-linked-list/remove-nth-node-from-end-of-list/visualize.html"><div class="t">Remove Nth Node From End of List</div><div class="d">#19 · Medium · one pass — open an n-gap with fast, then move both until fast hits the end</div></a>
+    <a class="card" href="03-linked-list/reverse-linked-list/visualize.html"><div class="t">Reverse Linked List</div><div class="d">#206 · Easy · flip each .next pointer with three references</div></a>
+  </div>
+
+  <div class="cat">Queue</div>
+  <div class="grid">
+    <a class="card" href="04-queue/implement-queue-using-stacks/visualize.html"><div class="t">Implement Queue using Stacks</div><div class="d">#232 · Easy · two stacks; pouring in→out reverses LIFO back into FIFO</div></a>
+  </div>
+
+  <div class="cat">Trees</div>
+  <div class="grid">
+    <a class="card" href="05-trees/binary-tree-level-order-traversal/visualize.html"><div class="t">Binary Tree Level Order Traversal</div><div class="d">#102 · Medium · BFS, one level (frontier) at a time</div></a>
+    <a class="card" href="05-trees/invert-binary-tree/visualize.html"><div class="t">Invert Binary Tree</div><div class="d">#226 · Easy · recursive DFS, swap every node's two children</div></a>
+    <a class="card" href="05-trees/kth-smallest-element-in-a-bst/visualize.html"><div class="t">Kth Smallest Element in a BST</div><div class="d">#230 · Medium · iterative in-order traversal, stop at the k-th node</div></a>
+    <a class="card" href="05-trees/lowest-common-ancestor-of-a-bst/visualize.html"><div class="t">Lowest Common Ancestor of a BST</div><div class="d">#235 · Medium · walk down using BST order, stop at the split point</div></a>
+    <a class="card" href="05-trees/maximum-depth-of-binary-tree/visualize.html"><div class="t">Maximum Depth of Binary Tree</div><div class="d">#104 · Easy · recursive DFS, depth = 1 + max(left, right)</div></a>
+    <a class="card" href="05-trees/validate-binary-search-tree/visualize.html"><div class="t">Validate Binary Search Tree</div><div class="d">#98 · Medium · DFS carrying an allowed (low, high) range</div></a>
+  </div>
+
+  <div class="cat">Heap Priority Queue</div>
+  <div class="grid">
+    <a class="card" href="06-heap-priority-queue/k-closest-points-to-origin/visualize.html"><div class="t">K Closest Points to Origin</div><div class="d">#973 · Medium · size-k MAX-heap keyed by squared distance x²+y²</div></a>
+    <a class="card" href="06-heap-priority-queue/kth-largest-element-in-a-stream/visualize.html"><div class="t">Kth Largest Element in a Stream</div><div class="d">#703 · Easy · keep a size-k MIN-heap; its root is the k-th largest</div></a>
+    <a class="card" href="06-heap-priority-queue/last-stone-weight/visualize.html"><div class="t">Last Stone Weight</div><div class="d">#1046 · Easy · MAX-heap; smash the two heaviest stones until ≤ 1 remains</div></a>
+  </div>
+
+  <div class="cat">Trie</div>
+  <div class="grid">
+    <a class="card" href="07-trie/design-add-and-search-words/visualize.html"><div class="t">Design Add and Search Words Data Structure</div><div class="d">#211 · Medium · trie + DFS; '.' wildcard tries every child branch</div></a>
+    <a class="card" href="07-trie/implement-trie-prefix-tree/visualize.html"><div class="t">Implement Trie (Prefix Tree)</div><div class="d">#208 · Medium · a tree of characters; green ring = end-of-word</div></a>
+  </div>
+
+  <div class="cat">Graphs</div>
+  <div class="grid">
+    <a class="card" href="08-graphs/clone-graph/visualize.html"><div class="t">Clone Graph</div><div class="d">#133 · Medium · DFS with an original→clone map to deep-copy nodes &amp; edges</div></a>
+    <a class="card" href="08-graphs/course-schedule/visualize.html"><div class="t">Course Schedule</div><div class="d">#207 · Medium · Kahn's algorithm — can we finish if the graph is a DAG?</div></a>
+    <a class="card" href="08-graphs/course-schedule-ii/visualize.html"><div class="t">Course Schedule II</div><div class="d">#210 · Medium · Kahn's algorithm — emit a valid topological order</div></a>
+    <a class="card" href="08-graphs/number-of-islands/visualize.html"><div class="t">Number of Islands</div><div class="d">#200 · Medium · DFS flood-fill — sink each island so it's counted once</div></a>
+    <a class="card" href="08-graphs/rotting-oranges/visualize.html"><div class="t">Rotting Oranges</div><div class="d">#994 · Medium · Multi-source BFS — rot spreads one ring per minute</div></a>
+  </div>
+
+  <div class="cat">Two Pointers</div>
+  <div class="grid">
+    <a class="card" href="09-two-pointers/3sum/visualize.html"><div class="t">3Sum</div><div class="d">#15 · Medium · sort, then fix one + two pointers</div></a>
+    <a class="card" href="09-two-pointers/container-with-most-water/visualize.html"><div class="t">Container With Most Water</div><div class="d">#11 · Medium · two pointers — move the shorter wall inward</div></a>
+  </div>
+
+  <div class="cat">Sliding Window</div>
+  <div class="grid">
+    <a class="card" href="10-sliding-window/longest-repeating-character-replacement/visualize.html"><div class="t">Longest Repeating Character Replacement</div><div class="d">#424 · Medium · sliding window keyed on replacements needed</div></a>
+    <a class="card" href="10-sliding-window/longest-substring-without-repeating-characters/visualize.html"><div class="t">Longest Substring Without Repeating Characters</div><div class="d">#3 · Medium · sliding window + last-seen index map</div></a>
+  </div>
+
+  <div class="cat">Binary Search</div>
+  <div class="grid">
+    <a class="card" href="11-binary-search/find-minimum-in-rotated-sorted-array/visualize.html"><div class="t">Find Minimum in Rotated Sorted Array</div><div class="d">#153 · Medium · binary search for the inflection point</div></a>
+    <a class="card" href="11-binary-search/koko-eating-bananas/visualize.html"><div class="t">Koko Eating Bananas</div><div class="d">#875 · Medium · binary search on the answer (the speed)</div></a>
+    <a class="card" href="11-binary-search/search-in-rotated-sorted-array/visualize.html"><div class="t">Search in Rotated Sorted Array</div><div class="d">#33 · Medium · binary search — one half is always sorted</div></a>
+  </div>
+
+  <div class="cat">Backtracking</div>
+  <div class="grid">
+    <a class="card" href="12-backtracking/combination-sum/visualize.html"><div class="t">Combination Sum</div><div class="d">#39 · Medium · Backtracking with reuse — recurse on the same index, prune when remaining &lt; 0</div></a>
+    <a class="card" href="12-backtracking/permutations/visualize.html"><div class="t">Permutations</div><div class="d">#46 · Medium · Backtracking with a used[] marker — order matters, every element appears</div></a>
+    <a class="card" href="12-backtracking/subsets/visualize.html"><div class="t">Subsets</div><div class="d">#78 · Medium · Backtracking — choose / recurse / un-choose to grow every subset</div></a>
+    <a class="card" href="12-backtracking/word-search/visualize.html"><div class="t">Word Search</div><div class="d">#79 · Medium · DFS backtracking on a grid — mark visited with '#', restore on the way out</div></a>
+  </div>
+
+  <div class="cat">Intervals</div>
+  <div class="grid">
+    <a class="card" href="13-intervals/insert-interval/visualize.html"><div class="t">Insert Interval</div><div class="d">#57 · Medium · three-phase sweep — copy before, absorb overlap, copy after</div></a>
+    <a class="card" href="13-intervals/merge-intervals/visualize.html"><div class="t">Merge Intervals</div><div class="d">#56 · Medium · sort by start, then sweep and merge adjacent overlaps</div></a>
+    <a class="card" href="13-intervals/non-overlapping-intervals/visualize.html"><div class="t">Non-overlapping Intervals</div><div class="d">#435 · Medium · greedy — sort by end, keep the earliest-finishing interval</div></a>
+  </div>
+
+  <div class="cat">Dynamic Programming</div>
+  <div class="grid">
+    <a class="card" href="14-dynamic-programming/climbing-stairs/visualize.html"><div class="t">Climbing Stairs</div><div class="d">#70 · Easy · 1-D DP array — it's secretly Fibonacci</div></a>
+    <a class="card" href="14-dynamic-programming/coin-change/visualize.html"><div class="t">Coin Change</div><div class="d">#322 · Medium · 1-D DP table — fewest coins, built bottom-up</div></a>
+    <a class="card" href="14-dynamic-programming/coin-change-ii/visualize.html"><div class="t">Coin Change II</div><div class="d">#518 · Medium · 1-D counting DP — combinations, coins on the outside</div></a>
+    <a class="card" href="14-dynamic-programming/edit-distance/visualize.html"><div class="t">Edit Distance</div><div class="d">#72 · Hard · 2-D DP grid — watch the table fill cell by cell</div></a>
+    <a class="card" href="14-dynamic-programming/house-robber/visualize.html"><div class="t">House Robber</div><div class="d">#198 · Medium · 1-D DP array — take this house or skip it</div></a>
+    <a class="card" href="14-dynamic-programming/longest-common-subsequence/visualize.html"><div class="t">Longest Common Subsequence</div><div class="d">#1143 · Medium · 2-D string DP — match jumps the diagonal</div></a>
+    <a class="card" href="14-dynamic-programming/longest-increasing-subsequence/visualize.html"><div class="t">Longest Increasing Subsequence</div><div class="d">#300 · Medium · O(n²) DP — dp[i] = longest run ending at i</div></a>
+    <a class="card" href="14-dynamic-programming/maximum-subarray/visualize.html"><div class="t">Maximum Subarray</div><div class="d">#53 · Medium · Kadane's — best sum ending at each index</div></a>
+    <a class="card" href="14-dynamic-programming/unique-paths/visualize.html"><div class="t">Unique Paths</div><div class="d">#62 · Medium · 2-D grid DP — each cell = up + left</div></a>
+    <a class="card" href="14-dynamic-programming/word-break/visualize.html"><div class="t">Word Break</div><div class="d">#139 · Medium · DP over prefixes — can s be split into dict words?</div></a>
+  </div>
+
+  <div class="note">
+    Each visualizer runs the <em>real</em> algorithm through a tiny recorder, so the animation always matches the logic.
+    Every problem also has a <code>README.md</code> (idea + ASCII walkthrough) and a runnable <code>solution.ts</code> (<code>./run.sh &lt;name&gt;</code>).
+  </div>
+</div>
+</body>
+</html>

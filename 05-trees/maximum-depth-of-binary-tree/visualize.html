@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maximum Depth of Binary Tree — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Maximum Depth of Binary Tree",
+  subtitle: "#104 · Easy · recursive DFS, depth = 1 + max(left, right)",
+  url: "https://leetcode.com/problems/maximum-depth-of-binary-tree/",
+  code: [
+    "function maxDepth(root) {",
+    "  if (root === null) return 0;",
+    "  return 1 + Math.max(",
+    "    maxDepth(root.left),",
+    "    maxDepth(root.right)",
+    "  );",
+    "}"
+  ],
+  build: function (rec) {
+    var N = function (v, l, r) { return { v: v, l: l || null, r: r || null }; };
+    // [3,9,20,null,null,15,7]
+    var root = N(3, N(9), N(20, N(15), N(7)));
+    var visited = {}, current = null;
+    function snapshot(line, note, aux) {
+      var mk = function (n) {
+        if (!n) return null;
+        var state = null;
+        if (n === current) state = "current";
+        else if (visited[n.v]) state = "visited";
+        return { label: n.v, state: state, children: [mk(n.l), mk(n.r)] };
+      };
+      rec.step({ line: line, type: "tree", root: mk(root), note: note, aux: aux || {} });
+    }
+    snapshot(1, "Depth of a tree = 1 plus the depth of its deeper subtree; an empty tree has depth 0. We compute this bottom-up with DFS.");
+
+    function maxDepth(node) {
+      current = node;
+      if (node === null) {
+        snapshot(2, "Reached a null child → this branch contributes depth 0.", { depth: 0 });
+        return 0;
+      }
+      snapshot(2, "Visit node " + node.v + ". Not null, so its depth is 1 + the max of its two subtrees.");
+      var l = maxDepth(node.l);
+      current = node;
+      snapshot(4, "Left subtree of " + node.v + " has depth " + l + ".", { left: l });
+      var r = maxDepth(node.r);
+      current = node;
+      snapshot(5, "Right subtree of " + node.v + " has depth " + r + ".", { left: l, right: r });
+      var d = 1 + Math.max(l, r);
+      visited[node.v] = true;
+      snapshot(3, "Node " + node.v + " returns 1 + max(" + l + ", " + r + ") = " + d + ". This bubbles up to its parent.", { depth: d });
+      return d;
+    }
+    var ans = maxDepth(root);
+    current = null;
+    snapshot(3, "The root returned " + ans + " — that is the maximum depth of the whole tree.", { answer: ans });
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coin Change — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Coin Change",
+  subtitle: "#322 · Medium · 1-D DP table — fewest coins, built bottom-up",
+  url: "https://leetcode.com/problems/coin-change/",
+  code: [
+    "function coinChange(coins, amount) {",
+    "  const dp = Array(amount + 1).fill(Infinity);",
+    "  dp[0] = 0;",
+    "  for (let a = 1; a <= amount; a++) {",
+    "    for (const c of coins)",
+    "      if (c <= a) dp[a] = Math.min(dp[a], dp[a - c] + 1);",
+    "  }",
+    "  return dp[amount] === Infinity ? -1 : dp[amount];",
+    "}"
+  ],
+  build: function (rec) {
+    var coins = [1, 2, 5], amount = 11;
+    var INF = Infinity;
+    var dp = []; for (var k = 0; k <= amount; k++) dp.push(INF);
+    dp[0] = 0;
+    var show = function () { return dp.map(function (x) { return x === INF ? "∞" : x; }); };
+    rec.step({ line: 3, type: "array", values: show(), hi: [0], note: "dp[a] = fewest coins to make amount a. Base: dp[0] = 0, everything else ∞ (unreachable so far). Coins = [1, 2, 5]." });
+    for (var a = 1; a <= amount; a++) {
+      var best = INF, from = -1, used = 0;
+      for (var ci = 0; ci < coins.length; ci++) {
+        var c = coins[ci];
+        if (c <= a && dp[a - c] + 1 < best) { best = dp[a - c] + 1; from = a - c; used = c; }
+      }
+      dp[a] = best;
+      var ptr = { a: a };
+      if (from >= 0) ptr["a−" + used] = from;
+      rec.step({
+        line: 6, type: "array", values: show(), pointers: ptr, hi: [a], dim: from >= 0 ? [from] : [],
+        note: from >= 0
+          ? ("dp[" + a + "] = 1 + dp[" + from + "] = " + best + "   (take a " + used + "-coin, then solve the rest)")
+          : ("dp[" + a + "] stays ∞ — no coin ≤ " + a + " leads to a solved amount."),
+        aux: { amount: a, "dp[a]": (best === INF ? "∞" : best) }
+      });
+    }
+    rec.step({ line: 8, type: "array", values: show(), pointers: {}, hi: [amount], note: "Answer = dp[" + amount + "] = " + dp[amount] + "   (e.g. 5 + 5 + 1).", aux: { answer: dp[amount] } });
+  }
+});
+</script>
+</body>
+</html>

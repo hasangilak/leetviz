@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Container With Most Water — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Container With Most Water",
+  subtitle: "#11 · Medium · two pointers — move the shorter wall inward",
+  url: "https://leetcode.com/problems/container-with-most-water/",
+  code: [
+    "function maxArea(height) {",
+    "  let lo = 0, hi = height.length - 1, best = 0;",
+    "  while (lo < hi) {",
+    "    const area = (hi - lo) * Math.min(height[lo], height[hi]);",
+    "    best = Math.max(best, area);",
+    "    if (height[lo] < height[hi]) lo++;",
+    "    else hi--;",
+    "  }",
+    "  return best;",
+    "}"
+  ],
+  build: function (rec) {
+    var height = [1, 8, 6, 2, 5, 4, 8, 3, 7];
+    var lo = 0, hi = height.length - 1, best = 0;
+    rec.step({ line: 2, type: "bars", values: height, pointers: { lo: lo, hi: hi }, hi: [lo, hi], note: "Start as wide as possible: lo at the left end, hi at the right end.", aux: { best: best } });
+    while (lo < hi) {
+      var area = (hi - lo) * Math.min(height[lo], height[hi]);
+      best = Math.max(best, area);
+      rec.step({ line: 4, type: "bars", values: height, pointers: { lo: lo, hi: hi }, hi: [lo, hi], fill: [lo + 1, hi - 1], note: "area = (" + hi + " − " + lo + ") × min(" + height[lo] + ", " + height[hi] + ") = " + area, aux: { area: area, best: best } });
+      if (height[lo] < height[hi]) {
+        rec.step({ line: 6, type: "bars", values: height, pointers: { lo: lo, hi: hi }, hi: [lo], note: "Left wall (" + height[lo] + ") is shorter — it caps the water level, so move lo right to look for taller.", aux: { best: best } });
+        lo++;
+      } else {
+        rec.step({ line: 7, type: "bars", values: height, pointers: { lo: lo, hi: hi }, hi: [hi], note: "Right wall (" + height[hi] + ") is the shorter (or equal) one — move hi left.", aux: { best: best } });
+        hi--;
+      }
+    }
+    rec.step({ line: 9, type: "bars", values: height, pointers: {}, hi: [], note: "Pointers met. The largest area found is " + best + ".", aux: { best: best } });
+  }
+});
+</script>
+</body>
+</html>

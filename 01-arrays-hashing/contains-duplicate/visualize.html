@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contains Duplicate — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Contains Duplicate",
+  subtitle: "#217 · Easy · hash set membership — first repeat wins",
+  url: "https://leetcode.com/problems/contains-duplicate/",
+  code: [
+    "function containsDuplicate(nums) {",
+    "  const seen = new Set();",
+    "  for (const n of nums) {",
+    "    if (seen.has(n)) return true;",
+    "    seen.add(n);",
+    "  }",
+    "  return false;",
+    "}"
+  ],
+  build: function (rec) {
+    var nums = [1, 2, 3, 1];
+    var seen = {};                          // value -> first index, used as a set
+    var fmt = function () { return "{" + Object.keys(seen).join(", ") + "}"; };
+    rec.step({ line: 2, type: "array", values: nums, pointers: {}, note: "Scan left to right; the set remembers every distinct value already seen.", aux: { seen: fmt() } });
+    for (var i = 0; i < nums.length; i++) {
+      var n = nums[i];
+      rec.step({ line: 3, type: "array", values: nums, pointers: { i: i }, hi: [i], note: "Look at nums[" + i + "] = " + n + ". Is it already in the set?", aux: { seen: fmt() } });
+      if (Object.prototype.hasOwnProperty.call(seen, n)) {
+        var first = seen[n];
+        rec.step({ line: 4, type: "array", values: nums, pointers: { first: first, i: i }, hi: [first, i], note: n + " was already seen at index " + first + " → duplicate found, return true.", aux: { seen: fmt(), duplicate: n } });
+        return;
+      }
+      seen[n] = i;
+      rec.step({ line: 5, type: "array", values: nums, pointers: { i: i }, hi: [i], dim: [i], note: n + " is new → add it to the set and continue.", aux: { seen: fmt() } });
+    }
+    rec.step({ line: 7, type: "array", values: nums, pointers: {}, note: "Reached the end with no repeats → all values distinct, return false.", aux: { seen: fmt() } });
+  }
+});
+</script>
+</body>
+</html>

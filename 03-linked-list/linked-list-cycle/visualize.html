@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Linked List Cycle — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Linked List Cycle",
+  subtitle: "#141 · Easy · Floyd's tortoise & hare — slow +1, fast +2, they collide inside a loop",
+  url: "https://leetcode.com/problems/linked-list-cycle/",
+  code: [
+    "function hasCycle(head) {",
+    "  let slow = head;",
+    "  let fast = head;",
+    "  while (fast !== null && fast.next !== null) {",
+    "    slow = slow.next;",
+    "    fast = fast.next.next;",
+    "    if (slow === fast) return true;",
+    "  }",
+    "  return false;",
+    "}"
+  ],
+  build: function (rec) {
+    // 3 -> 2 -> 0 -> -4 -> (back to 2)   has a cycle
+    var vals = [3, 2, 0, -4];
+    var nodes = vals.map(function (v, i) { return { id: i, val: v }; });
+    var next = { 0: 1, 1: 2, 2: 3, 3: 1 }; // last node (-4, id 3) loops back to id 1 (value 2)
+    var label = function (id) { return id == null ? "null" : String(vals[id]); };
+    // rebuild arrows from current next-pointers each step; the back-edge from -4 to id 1 draws the cycle
+    var arrows = function () { return nodes.map(function (n) { return { from: n.id, to: next[n.id] }; }); };
+
+    var slow = 0, fast = 0, stepNo = 0;
+
+    rec.step({
+      line: 2, type: "list", nodes: nodes, arrows: arrows(),
+      pointers: { slow: slow, fast: fast }, hi: [slow],
+      aux: { step: stepNo },
+      note: "Both pointers start at head (3). Node -4's next loops back to 2 → there is a cycle."
+    });
+
+    // while (fast !== null && fast.next !== null)
+    while (fast !== null && next[fast] !== null) {
+      stepNo++;
+      slow = next[slow];               // slow = slow.next
+      rec.step({
+        line: 5, type: "list", nodes: nodes, arrows: arrows(),
+        pointers: { slow: slow, fast: fast }, hi: [slow],
+        aux: { step: stepNo },
+        note: "slow = slow.next → slow now at " + label(slow) + " (moved 1)."
+      });
+      fast = next[next[fast]];         // fast = fast.next.next
+      rec.step({
+        line: 6, type: "list", nodes: nodes, arrows: arrows(),
+        pointers: { slow: slow, fast: fast }, hi: [fast],
+        aux: { step: stepNo },
+        note: "fast = fast.next.next → fast now at " + label(fast) + " (moved 2)."
+      });
+      if (slow === fast) {
+        rec.step({
+          line: 7, type: "list", nodes: nodes, arrows: arrows(),
+          pointers: { slow: slow, fast: fast }, hi: [slow],
+          aux: { step: stepNo, met: "yes" },
+          note: "slow === fast at " + label(slow) + " — they collided! Inside the loop the gap shrinks by 1 each step, so they must meet → return true."
+        });
+        return;
+      }
+      rec.step({
+        line: 7, type: "list", nodes: nodes, arrows: arrows(),
+        pointers: { slow: slow, fast: fast },
+        aux: { step: stepNo, met: "no" },
+        note: "slow (" + label(slow) + ") !== fast (" + label(fast) + ") yet — keep looping."
+      });
+    }
+  }
+});
+</script>
+</body>
+</html>

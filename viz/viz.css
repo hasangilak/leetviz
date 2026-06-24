@@ -1,0 +1,136 @@
+/* viz.css — shared styling for the LeetCode solution visualizers. */
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --panel2: #0b0f14;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --muted: #8b949e;
+  --accent: #58a6ff;
+  --hi: #f0a202;
+  --hi-bg: rgba(240, 162, 2, 0.18);
+  --good: #3fb950;
+  --good-bg: rgba(63, 185, 80, 0.18);
+  --water: rgba(88, 166, 255, 0.28);
+  --dim: #484f58;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.vz-app { max-width: 1080px; margin: 0 auto; padding: 22px 20px 60px; }
+
+.vz-head { border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 18px; }
+.vz-title { margin: 0 0 4px; font-size: 24px; }
+.vz-sub { color: var(--muted); font-size: 14px; }
+.vz-link { display: inline-block; margin-top: 8px; color: var(--accent); text-decoration: none; font-size: 13px; }
+.vz-link:hover { text-decoration: underline; }
+.vz-back { display:inline-block; margin-bottom: 14px; color: var(--muted); text-decoration:none; font-size:13px; }
+.vz-back:hover { color: var(--accent); }
+
+.vz-main { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.vz-stagewrap { flex: 1 1 540px; min-width: 320px; }
+.vz-stage {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 26px 18px;
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: auto;
+}
+
+/* code panel */
+.vz-code {
+  flex: 0 0 380px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 4px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  overflow-x: auto;
+}
+.vz-line { display: flex; padding: 1px 12px; white-space: pre; border-left: 3px solid transparent; }
+.vz-line.active { background: var(--hi-bg); border-left-color: var(--hi); }
+.vz-ln { color: var(--dim); width: 26px; text-align: right; margin-right: 14px; user-select: none; flex: none; }
+.vz-code-txt { color: var(--text); }
+.vz-line.active .vz-code-txt { color: #fff; }
+
+/* aux chips + caption */
+.vz-aux { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; min-height: 0; }
+.vz-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 13px; }
+.vz-chipk { color: var(--muted); font-family: var(--mono); }
+.vz-chipv { color: var(--text); font-family: var(--mono); font-weight: 600; }
+.vz-caption { margin-top: 14px; min-height: 44px; background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 6px; padding: 10px 14px; font-size: 14px; }
+
+/* controls */
+.vz-ctl { display: flex; align-items: center; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.vz-btn { background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 7px; padding: 7px 14px; font-size: 13px; cursor: pointer; }
+.vz-btn:hover:not(:disabled) { border-color: var(--accent); color: #fff; }
+.vz-btn:disabled { opacity: 0.4; cursor: default; }
+.vz-play { background: var(--accent); color: #0d1117; border-color: var(--accent); font-weight: 600; }
+.vz-counter { color: var(--muted); font-family: var(--mono); font-size: 13px; margin-left: 4px; }
+.vz-speedwrap { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.vz-speedlabel { color: var(--dim); font-size: 11px; }
+.vz-speed { width: 110px; }
+
+/* ---------- array / string ---------- */
+.vz-array, .vz-bars { display: flex; gap: 10px; align-items: flex-end; }
+.vz-col { display: flex; flex-direction: column; align-items: center; }
+.vz-ptrs { height: 40px; display: flex; flex-direction: column-reverse; align-items: center; justify-content: flex-start; gap: 2px; }
+.vz-ptr { font-family: var(--mono); font-size: 11px; color: var(--hi); font-weight: 700; }
+.vz-ptr::after { content: "▼"; display: block; text-align: center; font-size: 9px; line-height: 1; }
+.vz-cell {
+  width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
+  background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
+  font-family: var(--mono); font-size: 16px; font-weight: 600; transition: all .15s;
+}
+.vz-cell.hi { border-color: var(--hi); background: var(--hi-bg); color: #fff; }
+.vz-cell.dim { opacity: 0.32; }
+.vz-cell.inwin { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.vz-idx { color: var(--dim); font-family: var(--mono); font-size: 11px; margin-top: 5px; }
+
+/* ---------- bars ---------- */
+.vz-bars { align-items: flex-end; }
+.vz-barcol { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 0 1px; border-radius: 4px; }
+.vz-barcol.water { background: linear-gradient(var(--water), var(--water)); }
+.vz-bar { width: 36px; background: #2d3b52; border: 1px solid var(--border); border-bottom: none; border-radius: 5px 5px 0 0; display: flex; align-items: flex-start; justify-content: center; padding-top: 3px; transition: all .15s; }
+.vz-bar.hi { background: var(--hi); color: #0d1117; border-color: var(--hi); }
+.vz-barval { font-family: var(--mono); font-size: 12px; font-weight: 700; }
+
+/* ---------- grid (2-D DP) ---------- */
+.vz-grid { border-collapse: separate; border-spacing: 3px; font-family: var(--mono); }
+.vz-grid th { color: var(--muted); font-weight: 600; font-size: 13px; padding: 4px 8px; }
+.vz-grid .vz-corner { color: var(--dim); }
+.vz-grid td {
+  width: 40px; height: 38px; text-align: center; background: var(--panel2);
+  border: 1px solid var(--border); border-radius: 6px; font-size: 14px; transition: all .15s;
+}
+.vz-grid td.empty { background: transparent; border-color: transparent; }
+.vz-grid td.hi { border-color: var(--accent); color: #fff; background: rgba(88,166,255,0.14); }
+.vz-grid td.cur { border-color: var(--hi); background: var(--hi-bg); color: #fff; font-weight: 700; }
+
+/* ---------- svg (list / tree) ---------- */
+.vz-svg { display: block; max-width: 100%; }
+.vz-node { fill: var(--panel2); stroke: var(--border); stroke-width: 1.5; }
+.vz-node.hi { fill: var(--hi-bg); stroke: var(--hi); }
+.vz-nodeval { fill: var(--text); font-family: var(--mono); font-size: 15px; font-weight: 600; }
+.vz-ptrlabel { fill: var(--hi); font-family: var(--mono); font-size: 12px; font-weight: 700; }
+.vz-edge { stroke: var(--accent); stroke-width: 2; fill: none; }
+.vz-arrowhead { fill: var(--accent); }
+.vz-null { fill: var(--muted); font-family: var(--mono); font-size: 13px; }
+.vz-tedge { stroke: var(--border); stroke-width: 2; }
+.vz-tnode { fill: var(--panel2); stroke: var(--border); stroke-width: 1.5; }
+.vz-tnode.current { fill: var(--hi-bg); stroke: var(--hi); stroke-width: 2.5; }
+.vz-tnode.visited { fill: var(--good-bg); stroke: var(--good); }
+.vz-tnode.instack { fill: rgba(88,166,255,0.14); stroke: var(--accent); }
+.vz-tlabel { fill: var(--text); font-family: var(--mono); font-size: 14px; font-weight: 600; }

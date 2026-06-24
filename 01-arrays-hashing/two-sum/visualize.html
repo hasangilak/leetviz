@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Two Sum — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Two Sum",
+  subtitle: "#1 · Easy · one-pass hash map — store value→index, look up the complement",
+  url: "https://leetcode.com/problems/two-sum/",
+  code: [
+    "function twoSum(nums, target) {",
+    "  const seen = new Map();           // value -> index",
+    "  for (let i = 0; i < nums.length; i++) {",
+    "    const complement = target - nums[i];",
+    "    if (seen.has(complement))",
+    "      return [seen.get(complement), i];",
+    "    seen.set(nums[i], i);",
+    "  }",
+    "  return [];",
+    "}"
+  ],
+  build: function (rec) {
+    var nums = [2, 7, 11, 15], target = 9;
+    var seen = {};                         // value -> index (plain object for JSON frames)
+    var fmt = function () {
+      var parts = [];
+      Object.keys(seen).forEach(function (k) { parts.push(k + ":" + seen[k]); });
+      return "{" + parts.join(", ") + "}";
+    };
+    rec.step({ line: 2, type: "array", values: nums, pointers: {}, note: "Looking for two numbers that add up to " + target + ". The map will remember every value→index seen so far.", aux: { seen: fmt() } });
+    for (var i = 0; i < nums.length; i++) {
+      var complement = target - nums[i];
+      rec.step({ line: 4, type: "array", values: nums, pointers: { i: i }, hi: [i], note: "nums[" + i + "] = " + nums[i] + ", so the complement we need is " + target + " − " + nums[i] + " = " + complement + ".", aux: { seen: fmt(), complement: complement } });
+      if (Object.prototype.hasOwnProperty.call(seen, complement)) {
+        var j = seen[complement];
+        rec.step({ line: 6, type: "array", values: nums, pointers: { j: j, i: i }, hi: [j, i], note: "Complement " + complement + " is already in the map at index " + j + " → answer found: [" + j + ", " + i + "].", aux: { seen: fmt(), answer: "[" + j + ", " + i + "]" } });
+        return;
+      }
+      seen[nums[i]] = i;
+      rec.step({ line: 7, type: "array", values: nums, pointers: { i: i }, hi: [i], dim: [i], note: "Complement " + complement + " not seen yet → record nums[" + i + "]=" + nums[i] + " at index " + i + " and move on.", aux: { seen: fmt() } });
+    }
+    rec.step({ line: 9, type: "array", values: nums, pointers: {}, note: "No pair found (the problem guarantees one exists, so this is unreachable here).", aux: { seen: fmt() } });
+  }
+});
+</script>
+</body>
+</html>

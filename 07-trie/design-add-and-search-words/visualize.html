@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design Add and Search Words — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Design Add and Search Words Data Structure",
+  subtitle: "#211 · Medium · trie + DFS; '.' wildcard tries every child branch",
+  url: "https://leetcode.com/problems/design-add-and-search-words-data-structure/",
+  code: [
+    "addWord(word): trie insert; flag the final node",
+    "search(word):  return dfs(root, 0)",
+    "dfs(node, i):",
+    "  if (i === word.length) return node.isEnd;",
+    "  ch = word[i];",
+    "  if (ch === '.')",
+    "    for (child of node.children) if (dfs(child, i+1)) return true;",
+    "  else next = node.children.get(ch); return next && dfs(next, i+1);"
+  ],
+  build: function (rec) {
+    // trie node: { ch, children: {char->node}, isEnd }, root.ch = "•"
+    var root = { ch: "•", children: {}, isEnd: false };
+    var current = null; // node highlighted "current"
+
+    function mk(n) {
+      var st = null;
+      if (n === current) st = "current";
+      else if (n.isEnd) st = "visited"; // green ring = end-of-word
+      var kids = Object.keys(n.children).sort().map(function (c) { return mk(n.children[c]); });
+      return { label: n.ch, state: st, children: kids };
+    }
+    function snap(line, note, extraAux) {
+      var aux = {};
+      if (extraAux) for (var key in extraAux) aux[key] = extraAux[key];
+      rec.step({ line: line, type: "tree", root: mk(root), note: note, aux: aux });
+    }
+
+    function addWord(word) {
+      current = root;
+      snap(1, "addWord(\"" + word + "\"): walk/create a path from the root.");
+      var node = root;
+      for (var i = 0; i < word.length; i++) {
+        var ch = word[i];
+        if (!node.children[ch]) node.children[ch] = { ch: ch, children: {}, isEnd: false };
+        node = node.children[ch];
+        current = node;
+        snap(1, "addWord(\"" + word + "\"): char '" + ch + "' → into child '" + ch + "'.");
+      }
+      node.isEnd = true;
+      current = null;
+      snap(1, "addWord(\"" + word + "\"): mark node '" + node.ch + "' end-of-word (green ring).", { stored: "\"" + word + "\"" });
+    }
+
+    var word = "";
+    // recursive dfs that records steps; returns true/false
+    function dfs(node, i) {
+      if (i === word.length) {
+        current = node;
+        var done = node.isEnd;
+        snap(4, "Consumed all of \"" + word + "\" at node '" + node.ch + "'. Is it end-of-word? " + (done ? "Yes → match." : "No → dead end."));
+        return done;
+      }
+      var ch = word[i];
+      if (ch === ".") {
+        var keys = Object.keys(node.children).sort();
+        snap(7, "Position " + i + " is '.' (wildcard) at node '" + node.ch + "': try EACH child branch (" + keys.join(", ") + ").");
+        for (var ki = 0; ki < keys.length; ki++) {
+          var child = node.children[keys[ki]];
+          current = child;
+          snap(7, "Wildcard '.' branch '" + keys[ki] + "': recurse into it and try to match the rest of \"" + word + "\".");
+          if (dfs(child, i + 1)) {
+            current = child;
+            snap(7, "Branch '" + keys[ki] + "' succeeded — return true immediately (no need to try the rest).", { match: true });
+            return true;
+          }
+          snap(7, "Branch '" + keys[ki] + "' failed; back up and try the next child.");
+        }
+        snap(7, "No child branch matched at node '" + node.ch + "' → return false.", { match: false });
+        return false;
+      }
+      var next = node.children[ch];
+      if (!next) {
+        current = node;
+        snap(8, "Need child '" + ch + "' but it's missing → return false.", { match: false });
+        return false;
+      }
+      next = node.children[ch];
+      current = next;
+      snap(8, "Literal char '" + ch + "' → into child '" + ch + "', recurse on the rest.");
+      return dfs(next, i + 1);
+    }
+
+    function search(w) {
+      word = w;
+      current = root;
+      snap(2, "search(\"" + w + "\"): start DFS at the root, index 0.");
+      var ok = dfs(root, 0);
+      current = null;
+      snap(2, "search(\"" + w + "\") → " + ok + ".", { search: ok });
+    }
+
+    addWord("bad");
+    addWord("dad");
+    addWord("mad");
+    search(".ad"); // true — '.' matches the first child (b), whose path spells .ad
+  }
+});
+</script>
+</body>
+</html>

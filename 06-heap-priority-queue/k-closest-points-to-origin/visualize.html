@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K Closest Points to Origin — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "K Closest Points to Origin",
+  subtitle: "#973 · Medium · size-k MAX-heap keyed by squared distance x²+y²",
+  url: "https://leetcode.com/problems/k-closest-points-to-origin/",
+  code: [
+    "for (const [x, y] of points) {",
+    "  maxHeap.push({ dist: x*x + y*y, point: [x, y] });",
+    "  if (maxHeap.size() > k)",
+    "    maxHeap.pop();   // evict the farthest",
+    "}",
+    "// whatever survives is the k closest"
+  ],
+  build: function (rec) {
+    var points = [[3, 3], [5, -1], [-2, 4]];
+    var k = 2;
+
+    function label(e) { return "(" + e.point[0] + "," + e.point[1] + ")=" + e.dist; }
+
+    // --- max-heap keyed by dist (a.dist > b.dist => farthest floats to root) ---
+    var data = [];
+    function less(a, b) { return a.dist > b.dist; } // farthest = highest priority
+    function bubbleUp(i) {
+      while (i > 0) {
+        var p = (i - 1) >> 1;
+        if (!less(data[i], data[p])) break;
+        var t = data[i]; data[i] = data[p]; data[p] = t;
+        i = p;
+      }
+    }
+    function bubbleDown() {
+      var i = 0, n = data.length;
+      while (true) {
+        var best = i, l = 2 * i + 1, r = 2 * i + 2;
+        if (l < n && less(data[l], data[best])) best = l;
+        if (r < n && less(data[r], data[best])) best = r;
+        if (best === i) break;
+        var t = data[i]; data[i] = data[best]; data[best] = t;
+        i = best;
+      }
+    }
+    function push(e) { data.push(e); bubbleUp(data.length - 1); }
+    function pop() {
+      var top = data[0], last = data.pop();
+      if (last !== undefined && data.length > 0) { data[0] = last; bubbleDown(); }
+      return top;
+    }
+
+    function heapStr() { return data.map(label).join(", "); }
+    function snap(line, note, hi, extraAux) {
+      var aux = { heap: data.length ? heapStr() : "(empty)" };
+      if (extraAux) for (var key in extraAux) aux[key] = extraAux[key];
+      rec.step({
+        line: line, type: "array",
+        values: data.map(label),
+        hi: hi || [],
+        note: note, aux: aux
+      });
+    }
+
+    rec.step({
+      line: 1, type: "array", values: [],
+      note: "k = " + k + ". We keep a MAX-heap (root = FARTHEST candidate) of at most k points, keyed by squared distance x²+y². Points: " + points.map(function (p) { return "(" + p[0] + "," + p[1] + ")"; }).join(", ") + ".",
+      aux: { heap: "(empty)" }
+    });
+
+    for (var pi = 0; pi < points.length; pi++) {
+      var x = points[pi][0], y = points[pi][1];
+      var d = x * x + y * y;
+      var e = { dist: d, point: [x, y] };
+      snap(2, "Take (" + x + "," + y + "): squared distance = " + x + "² + " + y + "² = " + d + ". Push it into the heap.", [], { incoming: label(e) });
+      push(e);
+      snap(2, "After push: heap = [" + heapStr() + "]. The root (index 0) is the farthest candidate so far.", data.length ? [0] : []);
+      if (data.length > k) {
+        snap(3, "Heap size " + data.length + " > k = " + k + " → the root (" + label(data[0]) + ") is the farthest, so it cannot be among the k closest. Evict it.", [0], { evicting: label(data[0]) });
+        var dropped = pop();
+        snap(4, "Popped " + label(dropped) + ". Heap shrinks to [" + heapStr() + "] — exactly k = " + k + " closest candidates remain.", data.length ? [0] : []);
+      } else {
+        snap(3, "Heap size " + data.length + " ≤ k = " + k + " → keep everything for now.", data.length ? [0] : []);
+      }
+    }
+
+    snap(5, "All points processed. The " + k + " points left in the heap are the answer: " + data.map(function (en) { return "(" + en.point[0] + "," + en.point[1] + ")"; }).join(", ") + ".", data.map(function (_, idx) { return idx; }), { answer: data.map(function (en) { return "(" + en.point[0] + "," + en.point[1] + ")"; }).join(" ") });
+  }
+});
+</script>
+</body>
+</html>

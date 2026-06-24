@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maximum Subarray — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Maximum Subarray",
+  subtitle: "#53 · Medium · Kadane's — best sum ending at each index",
+  url: "https://leetcode.com/problems/maximum-subarray/",
+  code: [
+    "function maxSubArray(nums) {",
+    "  let endHere = nums[0];",
+    "  let best = nums[0];",
+    "  for (let i = 1; i < nums.length; i++) {",
+    "    endHere = Math.max(nums[i], endHere + nums[i]);",
+    "    best = Math.max(best, endHere);",
+    "  }",
+    "  return best;",
+    "}"
+  ],
+  build: function (rec) {
+    var nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4];
+    var endHere = nums[0];
+    var best = nums[0];
+    // track the run that currently ends at i, and the best run found so far
+    var runStart = 0;
+    var bestStart = 0, bestEnd = 0;
+
+    var range = function (a, b) { var r = []; for (var k = a; k <= b; k++) r.push(k); return r; };
+
+    rec.step({
+      line: 2, type: "array", values: nums.slice(),
+      pointers: { i: 0 }, hi: [0],
+      note: "Kadane's: endHere = best subarray sum that ENDS at the current index. Start with index 0: endHere = best = " + nums[0] + ".",
+      aux: { endHere: endHere, best: best }
+    });
+
+    for (var i = 1; i < nums.length; i++) {
+      var prevEnd = endHere;
+      var extend = endHere + nums[i];
+      var restarted = nums[i] > extend; // start fresh beats extending
+      endHere = Math.max(nums[i], extend);
+      if (restarted) runStart = i;
+
+      var newBest = endHere > best;
+      if (newBest) { best = endHere; bestStart = runStart; bestEnd = i; }
+
+      rec.step({
+        line: newBest ? 6 : 5,
+        type: "array", values: nums.slice(),
+        pointers: { i: i }, hi: range(runStart, i),
+        note: restarted
+          ? ("RESTART at index " + i + ": the running sum (" + extend + ") was worse than starting fresh at " + nums[i] + ", so endHere = " + nums[i] + ". The previous run can only drag us down — drop it." + (newBest ? " That's also a new best (" + best + ")." : ""))
+          : ("Extend the run: endHere = " + prevEnd + " + " + nums[i] + " = " + endHere + ". " + (newBest ? "New best run nums[" + bestStart + ".." + bestEnd + "] = " + best + "." : "Best so far still " + best + ".")),
+        aux: { endHere: endHere, best: best, bestRun: "[" + bestStart + ".." + bestEnd + "]" }
+      });
+    }
+
+    rec.step({
+      line: 8, type: "array", values: nums.slice(),
+      hi: range(bestStart, bestEnd),
+      note: "Answer = " + best + ", the highlighted subarray nums[" + bestStart + ".." + bestEnd + "] = [" + nums.slice(bestStart, bestEnd + 1).join(", ") + "].",
+      aux: { answer: best }
+    });
+  }
+});
+</script>
+</body>
+</html>

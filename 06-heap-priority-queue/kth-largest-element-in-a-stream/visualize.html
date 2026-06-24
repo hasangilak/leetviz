@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kth Largest Element in a Stream — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Kth Largest Element in a Stream",
+  subtitle: "#703 · Easy · keep a size-k MIN-heap; its root is the k-th largest",
+  url: "https://leetcode.com/problems/kth-largest-element-in-a-stream/",
+  code: [
+    "add(val) {",
+    "  this.heap.push(val);              // min-heap",
+    "  if (this.heap.size() > this.k)",
+    "    this.heap.pop();               // drop smallest beyond top-k",
+    "  return this.heap.peek();          // root = k-th largest",
+    "}"
+  ],
+  build: function (rec) {
+    var k = 3;
+
+    // --- min-heap (a < b => smallest floats to root), mirrors solution.ts ---
+    var data = [];
+    function less(a, b) { return a < b; }
+    function bubbleUp(i) {
+      while (i > 0) {
+        var p = (i - 1) >> 1;
+        if (!less(data[i], data[p])) break;
+        var t = data[i]; data[i] = data[p]; data[p] = t;
+        i = p;
+      }
+    }
+    function bubbleDown() {
+      var i = 0, n = data.length;
+      while (true) {
+        var best = i, l = 2 * i + 1, r = 2 * i + 2;
+        if (l < n && less(data[l], data[best])) best = l;
+        if (r < n && less(data[r], data[best])) best = r;
+        if (best === i) break;
+        var t = data[i]; data[i] = data[best]; data[best] = t;
+        i = best;
+      }
+    }
+    function push(v) { data.push(v); bubbleUp(data.length - 1); }
+    function pop() {
+      var top = data[0], last = data.pop();
+      if (last !== undefined && data.length > 0) { data[0] = last; bubbleDown(); }
+      return top;
+    }
+
+    function snap(line, note, extraAux) {
+      var aux = { k: k };
+      if (extraAux) for (var key in extraAux) aux[key] = extraAux[key];
+      rec.step({
+        line: line, type: "array",
+        values: data.slice(),
+        hi: data.length ? [0] : [],
+        note: note, aux: aux
+      });
+    }
+
+    // constructor: add each of the initial nums (silently building the heap)
+    var init = [4, 5, 8, 2];
+    function addSilent(val) { push(val); if (data.length > k) pop(); }
+
+    function add(val, intro) {
+      snap(1, intro + " — push " + val + " into the min-heap, then bubble it up.");
+      push(val);
+      snap(2, "After push: heap = [" + data.join(", ") + "]. (Min-heap: parent ≤ children, so the smallest sits at index 0.)");
+      if (data.length > k) {
+        snap(3, "Heap size " + data.length + " > k = " + k + " → the root (" + data[0] + ") is the smallest of the top values and can never be the k-th largest, so pop it.");
+        pop();
+        snap(4, "After pop + re-heapify: heap = [" + data.join(", ") + "]. Exactly k = " + k + " of the largest values remain.");
+      } else {
+        snap(3, "Heap size " + data.length + " ≤ k = " + k + " → nothing to drop yet.");
+      }
+      var root = data[0];
+      snap(5, "Return the root = " + root + " — the " + k + "rd largest seen so far.", { returned: root });
+    }
+
+    // constructor seeds the heap from init; we start the animation here.
+    for (var ii = 0; ii < init.length; ii++) addSilent(init[ii]);
+    snap(2, "Constructor done: streamed [4, 5, 8, 2] through the size-" + k + " min-heap. Heap = [" + data.join(", ") + "] holds the " + k + " largest; root " + data[0] + " is the current " + k + "rd largest.");
+
+    add(3, "Stream: add(3)");
+    add(5, "Stream: add(5)");
+    add(10, "Stream: add(10)");
+    add(9, "Stream: add(9)");
+  }
+});
+</script>
+</body>
+</html>

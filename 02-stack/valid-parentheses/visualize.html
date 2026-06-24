@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Valid Parentheses — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Valid Parentheses",
+  subtitle: "#20 · Easy · push openers, pop must match the closer",
+  url: "https://leetcode.com/problems/valid-parentheses/",
+  code: [
+    "function isValid(s) {",
+    "  const match = { ')': '(', ']': '[', '}': '{' };",
+    "  const stack = [];",
+    "  for (const ch of s) {",
+    "    if (ch === '(' || ch === '[' || ch === '{')",
+    "      stack.push(ch);",
+    "    else if (stack.pop() !== match[ch])",
+    "      return false;",
+    "  }",
+    "  return stack.length === 0;",
+    "}"
+  ],
+  build: function (rec) {
+    var match = { ")": "(", "]": "[", "}": "{" };
+    // aux helper: render the stack bottom->top as a spaced string of glyphs
+    var show = function (st) { return st.length ? "[ " + st.join(" ") + "  ←top" : "(empty)"; };
+
+    var run = function (s) {
+      var chars = s.split("");
+      var stack = [];
+      rec.step({
+        line: 3, type: "array", values: chars, pointers: {},
+        note: "Validate \"" + s + "\". Stack starts empty. Openers get pushed; each closer must pop its EXACT matching opener.",
+        aux: { input: s, stack: show(stack) }
+      });
+      for (var i = 0; i < chars.length; i++) {
+        var ch = chars[i];
+        if (ch === "(" || ch === "[" || ch === "{") {
+          stack.push(ch);
+          rec.step({
+            line: 5, type: "array", values: chars, pointers: { i: i }, hi: [i],
+            note: "'" + ch + "' is an opener → push it onto the stack.",
+            aux: { input: s, stack: show(stack) }
+          });
+        } else {
+          var top = stack.pop();
+          if (top !== match[ch]) {
+            rec.step({
+              line: 7, type: "array", values: chars, pointers: { i: i }, hi: [i],
+              note: "'" + ch + "' is a closer. Top was " + (top === undefined ? "nothing" : "'" + top + "'") +
+                    ", but it needs '" + match[ch] + "' → MISMATCH, return false.",
+              aux: { input: s, stack: show(stack), result: "false" }
+            });
+            return;
+          }
+          rec.step({
+            line: 6, type: "array", values: chars, pointers: { i: i }, hi: [i],
+            note: "'" + ch + "' is a closer and the top was its match '" + top + "' → pop, this pair is balanced.",
+            aux: { input: s, stack: show(stack) }
+          });
+        }
+      }
+      var ok = stack.length === 0;
+      rec.step({
+        line: 9, type: "array", values: chars, pointers: {},
+        note: ok
+          ? "End of string and the stack is empty → every bracket was closed correctly → true."
+          : "End of string but openers remain on the stack → unbalanced → false.",
+        aux: { input: s, stack: show(stack), result: String(ok) }
+      });
+    };
+
+    run("{[]}");        // valid — nested then closed in order
+    run("([)]");        // invalid — interleaved, never validly nested
+  }
+});
+</script>
+</body>
+</html>

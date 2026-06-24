@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Permutations — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Permutations",
+  subtitle: "#46 · Medium · Backtracking with a used[] marker — order matters, every element appears",
+  url: "https://leetcode.com/problems/permutations/",
+  code: [
+    "function permute(nums) {",
+    "  const result = [];",
+    "  const current = [];",
+    "  const used = new Array(nums.length).fill(false);",
+    "  const backtrack = () => {",
+    "    if (current.length === nums.length) {",
+    "      result.push([...current]);   // full permutation",
+    "      return;",
+    "    }",
+    "    for (let i = 0; i < nums.length; i++) {",
+    "      if (used[i]) continue;       // already placed",
+    "      used[i] = true;",
+    "      current.push(nums[i]);",
+    "      backtrack();",
+    "      current.pop();               // undo",
+    "      used[i] = false;",
+    "    }",
+    "  };",
+    "  backtrack();",
+    "  return result;",
+    "}"
+  ],
+  build: function (rec) {
+    var nums = [1, 2, 3];
+    var current = [];
+    var used = [false, false, false];
+    var results = [];
+
+    var resultsText = function () {
+      return "[" + results.map(function (s) { return "[" + s.join(",") + "]"; }).join(", ") + "]";
+    };
+    var usedText = function () {
+      return "[" + used.map(function (b) { return b ? "T" : "F"; }).join(",") + "]";
+    };
+    var idxs = function () { return current.map(function (_, k) { return k; }); };
+
+    rec.step({
+      line: 5, type: "array", values: current.slice(), pointers: {}, hi: [],
+      note: "nums = [1,2,3]. Build `current` by placing each unused number in turn. used[] flags which indices are already in the current prefix.",
+      aux: { used: usedText(), results: resultsText() }
+    });
+
+    var backtrack = function () {
+      if (current.length === nums.length) {
+        // record handled by the completing push frame below
+        return;
+      }
+      for (var i = 0; i < nums.length; i++) {
+        if (used[i]) continue; // already placed in this prefix
+        used[i] = true;
+        current.push(nums[i]);
+        var full = current.length === nums.length;
+
+        if (full) {
+          // this push completes a permutation — record it here (push + record)
+          results.push(current.slice());
+          var p1 = {};
+          p1["+" + nums[i]] = current.length - 1;
+          rec.step({
+            line: 7, type: "array", values: current.slice(),
+            pointers: p1, hi: idxs(),
+            note: "Place nums[" + i + "] = " + nums[i] + " (used[" + i + "]=true). current is now full → record permutation [" + current.join(",") + "].",
+            aux: { used: usedText(), results: resultsText() }
+          });
+        } else {
+          var p2 = {};
+          p2["+" + nums[i]] = current.length - 1;
+          rec.step({
+            line: 13, type: "array", values: current.slice(),
+            pointers: p2, hi: [current.length - 1],
+            note: "Choose unused nums[" + i + "] = " + nums[i] + " → mark used[" + i + "]=true, push. current = [" + current.join(",") + "]. Recurse to fill the next slot.",
+            aux: { used: usedText(), results: resultsText() }
+          });
+        }
+
+        backtrack();
+
+        var removed = current[current.length - 1];
+        current.pop();
+        used[i] = false;
+        if (!full) {
+          rec.step({
+            line: 15, type: "array", values: current.slice(), dim: idxs(),
+            note: "Un-choose " + removed + " → pop and clear used[" + i + "]=false (backtrack). current = [" + current.join(",") + "]. Try the next unused number.",
+            aux: { used: usedText(), results: resultsText() }
+          });
+        }
+      }
+    };
+
+    backtrack();
+
+    rec.step({
+      line: 20, type: "array", values: current.slice(), pointers: {}, hi: [],
+      note: "Done. All " + results.length + " permutations of [1,2,3]: " + resultsText() + ".",
+      aux: { used: usedText(), results: resultsText() }
+    });
+  }
+});
+</script>
+</body>
+</html>

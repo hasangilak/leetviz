@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Koko Eating Bananas — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Koko Eating Bananas",
+  subtitle: "#875 · Medium · binary search on the answer (the speed)",
+  url: "https://leetcode.com/problems/koko-eating-bananas/",
+  code: [
+    "function minEatingSpeed(piles, h) {",
+    "  const hoursAt = speed =>",
+    "    piles.reduce((s, p) => s + Math.ceil(p / speed), 0);",
+    "  let lo = 1, hi = Math.max(...piles);",
+    "  while (lo < hi) {",
+    "    const mid = (lo + hi) >>> 1;",
+    "    if (hoursAt(mid) <= h) {",
+    "      hi = mid;",
+    "    } else {",
+    "      lo = mid + 1;",
+    "    }",
+    "  }",
+    "  return lo;",
+    "}"
+  ],
+  build: function (rec) {
+    var piles = [3, 6, 7, 11];
+    var h = 8;
+    var hoursAt = function (speed) {
+      return piles.reduce(function (s, p) { return s + Math.ceil(p / speed); }, 0);
+    };
+    var breakdown = function (speed) {
+      return piles.map(function (p) { return "⌈" + p + "/" + speed + "⌉=" + Math.ceil(p / speed); }).join(" + ");
+    };
+    var lo = 1, hi = Math.max.apply(null, piles);
+    rec.step({ line: 4, type: "bars", values: piles, pointers: {}, note: "Hours needed shrink as speed grows, so binary-search the smallest speed finishing within h = " + h + " hours. Search speed in [1, " + hi + "].", aux: { lo: lo, hi: hi, h: h } });
+    while (lo < hi) {
+      var mid = (lo + hi) >>> 1;
+      var hours = hoursAt(mid);
+      rec.step({ line: 6, type: "bars", values: piles, pointers: {}, hi: [], fill: [0, piles.length - 1], note: "Candidate speed mid = (" + lo + " + " + hi + ") >>> 1 = " + mid + ". hours = " + breakdown(mid) + " = " + hours + ".", aux: { lo: lo, hi: hi, mid: mid, hours: hours, h: h } });
+      if (hours <= h) {
+        rec.step({ line: 8, type: "bars", values: piles, pointers: {}, fill: [0, piles.length - 1], note: "hours " + hours + " ≤ h " + h + " — speed " + mid + " is FEASIBLE. Try slower: hi = " + mid + ".", aux: { lo: lo, hi: mid, mid: mid, hours: hours, h: h } });
+        hi = mid;
+      } else {
+        rec.step({ line: 10, type: "bars", values: piles, pointers: {}, note: "hours " + hours + " > h " + h + " — speed " + mid + " is too slow. Speed up: lo = " + (mid + 1) + ".", aux: { lo: mid + 1, hi: hi, mid: mid, hours: hours, h: h } });
+        lo = mid + 1;
+      }
+    }
+    rec.step({ line: 12, type: "bars", values: piles, pointers: {}, fill: [0, piles.length - 1], note: "lo == hi — smallest feasible eating speed is " + lo + " bananas/hour (takes " + hoursAt(lo) + " ≤ " + h + " hours).", aux: { answer: lo, hours: hoursAt(lo), h: h } });
+  }
+});
+</script>
+</body>
+</html>

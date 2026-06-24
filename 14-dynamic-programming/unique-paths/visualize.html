@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unique Paths — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "Unique Paths",
+  subtitle: "#62 · Medium · 2-D grid DP — each cell = up + left",
+  url: "https://leetcode.com/problems/unique-paths/",
+  code: [
+    "function uniquePaths(m, n) {",
+    "  const dp = grid(m, n);",
+    "  for (let j = 0; j < n; j++) dp[0][j] = 1;",
+    "  for (let i = 0; i < m; i++) dp[i][0] = 1;",
+    "  for (let i = 1; i < m; i++)",
+    "    for (let j = 1; j < n; j++)",
+    "      dp[i][j] = dp[i - 1][j] + dp[i][j - 1];",
+    "  return dp[m - 1][n - 1];",
+    "}"
+  ],
+  build: function (rec) {
+    var m = 3, n = 7;
+    var dp = [];
+    for (var i = 0; i < m; i++) { dp.push([]); for (var j = 0; j < n; j++) dp[i].push(null); }
+    // first row and first column are all 1 (one straight-line way)
+    for (var j2 = 0; j2 < n; j2++) dp[0][j2] = 1;
+    for (var i2 = 0; i2 < m; i2++) dp[i2][0] = 1;
+
+    var rL = []; for (var r = 0; r < m; r++) rL.push("row " + r);
+    var cL = []; for (var c = 0; c < n; c++) cL.push(c);
+    var grid = function () { return dp.map(function (row) { return row.slice(); }); };
+
+    rec.step({
+      line: 4, type: "grid", data: grid(), rLabels: rL, cLabels: cL, corner: "",
+      note: "The robot starts top-left, moves only RIGHT or DOWN, and wants the bottom-right. Base: the whole first row and first column are 1 — there's exactly one straight-line way to reach each of them.",
+      aux: { m: m, n: n }
+    });
+
+    for (var i3 = 1; i3 < m; i3++) {
+      for (var j3 = 1; j3 < n; j3++) {
+        dp[i3][j3] = dp[i3 - 1][j3] + dp[i3][j3 - 1];
+        rec.step({
+          line: 7, type: "grid", data: grid(), rLabels: rL, cLabels: cL, corner: "",
+          cur: { r: i3, c: j3 },
+          hi: [{ r: i3 - 1, c: j3 }, { r: i3, c: j3 - 1 }],
+          note: "You arrive at (" + i3 + "," + j3 + ") either from above ↑ " + dp[i3 - 1][j3] + " or from the left ← " + dp[i3][j3 - 1] + ". So dp[" + i3 + "][" + j3 + "] = " + dp[i3 - 1][j3] + " + " + dp[i3][j3 - 1] + " = " + dp[i3][j3] + ".",
+          aux: { up: dp[i3 - 1][j3], left: dp[i3][j3 - 1], cell: dp[i3][j3] }
+        });
+      }
+    }
+
+    rec.step({
+      line: 8, type: "grid", data: grid(), rLabels: rL, cLabels: cL, corner: "",
+      cur: { r: m - 1, c: n - 1 },
+      note: "Bottom-right cell is the answer: " + dp[m - 1][n - 1] + " distinct paths across a " + m + "×" + n + " grid.",
+      aux: { answer: dp[m - 1][n - 1] }
+    });
+  }
+});
+</script>
+</body>
+</html>

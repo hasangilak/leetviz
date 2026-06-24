@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>House Robber — Visualizer</title>
+<link rel="stylesheet" href="../../viz/viz.css">
+</head>
+<body>
+<script src="../../viz/viz.js"></script>
+<script>
+Viz.create({
+  title: "House Robber",
+  subtitle: "#198 · Medium · 1-D DP array — take this house or skip it",
+  url: "https://leetcode.com/problems/house-robber/",
+  code: [
+    "function rob(nums) {",
+    "  const dp = Array(nums.length).fill(0);",
+    "  for (let i = 0; i < nums.length; i++) {",
+    "    const take = nums[i] + (dp[i - 2] || 0);",
+    "    const skip = dp[i - 1] || 0;",
+    "    dp[i] = Math.max(take, skip);",
+    "  }",
+    "  return dp[nums.length - 1];",
+    "}"
+  ],
+  build: function (rec) {
+    var nums = [2, 7, 9, 3, 1];
+    var dp = []; for (var k = 0; k < nums.length; k++) dp.push(0);
+    var show = function () { return dp.slice(); };
+
+    rec.step({
+      line: 1, type: "array", values: nums.slice(),
+      note: "These are the houses (money inside each). The alarm links neighbours, so you can never rob two ADJACENT houses.",
+      aux: { houses: "[" + nums.join(", ") + "]" }
+    });
+    rec.step({
+      line: 2, type: "array", values: show(),
+      note: "dp[i] = the best total robbing only houses 0..i. We fill it left to right; at each house we choose to ROB it (and add dp[i−2]) or SKIP it (carry dp[i−1]). Think of dp[i−1] and dp[i−2] as 0 when out of range.",
+      aux: { houses: "[" + nums.join(", ") + "]" }
+    });
+
+    for (var i = 0; i < nums.length; i++) {
+      var twoBack = i - 2 >= 0 ? dp[i - 2] : 0;
+      var oneBack = i - 1 >= 0 ? dp[i - 1] : 0;
+      var take = nums[i] + twoBack;
+      var skip = oneBack;
+      dp[i] = Math.max(take, skip);
+      var robbed = take >= skip;
+
+      var ptr = { i: i };
+      var dimCells = [];
+      if (i - 2 >= 0) { ptr["i−2"] = i - 2; dimCells.push(i - 2); }
+      if (i - 1 >= 0) { ptr["i−1"] = i - 1; dimCells.push(i - 1); }
+
+      rec.step({
+        line: 6, type: "array", values: show(),
+        pointers: ptr, hi: [i], dim: dimCells,
+        note: robbed
+          ? ("ROB house " + i + " (money " + nums[i] + "): take = " + nums[i] + " + dp[i−2]=" + twoBack + " = " + take + "  ≥  skip = dp[i−1]=" + skip + ".  dp[" + i + "] = " + dp[i] + ".")
+          : ("SKIP house " + i + ": skip = dp[i−1]=" + skip + "  >  take = " + nums[i] + " + dp[i−2]=" + twoBack + " = " + take + ".  dp[" + i + "] = " + dp[i] + "."),
+        aux: { take: take, skip: skip, choice: robbed ? "rob" : "skip" }
+      });
+    }
+
+    rec.step({
+      line: 8, type: "array", values: show(), hi: [nums.length - 1],
+      note: "Answer = dp[" + (nums.length - 1) + "] = " + dp[nums.length - 1] + " (rob houses 0, 2 and 4: 2 + 9 + 1).",
+      aux: { answer: dp[nums.length - 1] }
+    });
+  }
+});
+</script>
+</body>
+</html>
