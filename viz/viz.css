@@ -136,3 +136,27 @@ body {
 .vz-tnode.visited { fill: var(--good-bg); stroke: var(--good); }
 .vz-tnode.instack { fill: rgba(88,166,255,0.14); stroke: var(--accent); }
 .vz-tlabel { fill: var(--text); font-family: var(--mono); font-size: 14px; font-weight: 600; }
+
+/* ---------- embedded README write-up ---------- */
+.vz-readme { max-width: 860px; margin: 24px auto 0; line-height: 1.65; }
+.vz-md-sep { border: none; border-top: 1px solid var(--border); margin: 8px 0 18px; }
+.vz-readme-label { color: var(--muted); font-size: 12px; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 6px; }
+.vz-readme h1 { font-size: 22px; margin: 24px 0 10px; }
+.vz-readme h2 { font-size: 19px; margin: 26px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.vz-readme h3 { font-size: 16px; margin: 20px 0 8px; }
+.vz-readme h4, .vz-readme h5, .vz-readme h6 { font-size: 14px; margin: 16px 0 6px; }
+.vz-readme p { margin: 10px 0; }
+.vz-readme ul, .vz-readme ol { padding-left: 22px; margin: 10px 0; }
+.vz-readme li { margin: 3px 0; }
+.vz-readme a { color: var(--accent); text-decoration: none; }
+.vz-readme a:hover { text-decoration: underline; }
+.vz-readme strong { color: #fff; }
+.vz-readme code { font-family: var(--mono); font-size: 12.5px; background: var(--panel2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; }
+.vz-readme img { max-width: 100%; }
+.vz-md-pre { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; overflow-x: auto; margin: 12px 0; }
+.vz-md-pre code { font-family: var(--mono); font-size: 12.5px; line-height: 1.45; background: none; border: none; padding: 0; white-space: pre; }
+.vz-md-table { border-collapse: collapse; margin: 14px 0; font-size: 13px; display: block; overflow-x: auto; }
+.vz-md-table th, .vz-md-table td { border: 1px solid var(--border); padding: 6px 12px; text-align: left; }
+.vz-md-table th { background: var(--panel); font-weight: 600; }
+.vz-readme blockquote { border-left: 3px solid var(--accent); margin: 14px 0; padding: 6px 14px; color: var(--muted); background: var(--panel); border-radius: 0 6px 6px 0; }
+.vz-readme blockquote p { margin: 0; }

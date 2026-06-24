@@ -48,6 +48,53 @@
     return by;
   }
 
+  /* ---------------- tiny markdown -> HTML (for the embedded README) ---------------- */
+  function mdEsc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function mdInline(s) {
+    return mdEsc(s)
+      .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img alt="$1" src="$2">')
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>');
+  }
+  function mdToHtml(md) {
+    var lines = md.replace(/\r/g, '').split('\n');
+    var out = '';
+    var i = 0;
+    var isBlockStart = function (l) {
+      return /^(#{1,6}\s|```|>\s?|\s*[-*]\s+|\s*\d+\.\s+|---+\s*$)/.test(l) || /\|/.test(l);
+    };
+    while (i < lines.length) {
+      var line = lines[i];
+      if (/^```/.test(line)) { // fenced code (the ASCII walkthroughs live here)
+        i++; var buf = [];
+        while (i < lines.length && !/^```/.test(lines[i])) { buf.push(lines[i]); i++; }
+        i++;
+        out += '<pre class="vz-md-pre"><code>' + mdEsc(buf.join('\n')) + '</code></pre>';
+        continue;
+      }
+      if (/\|/.test(line) && i + 1 < lines.length && /-/.test(lines[i + 1]) && /^\s*\|?[\s:|-]+$/.test(lines[i + 1])) {
+        var row = function (r) { return r.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map(function (c) { return c.trim(); }); };
+        var head = row(line); i += 2; var rows = [];
+        while (i < lines.length && /\|/.test(lines[i]) && lines[i].trim() !== '') { rows.push(row(lines[i])); i++; }
+        out += '<table class="vz-md-table"><thead><tr>' + head.map(function (h) { return '<th>' + mdInline(h) + '</th>'; }).join('') +
+          '</tr></thead><tbody>' + rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + mdInline(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table>';
+        continue;
+      }
+      var hm = /^(#{1,6})\s+(.*)$/.exec(line);
+      if (hm) { var lv = Math.min(6, hm[1].length); out += '<h' + lv + '>' + mdInline(hm[2]) + '</h' + lv + '>'; i++; continue; }
+      if (/^---+\s*$/.test(line)) { out += '<hr>'; i++; continue; }
+      if (/^>\s?/.test(line)) { var bq = []; while (i < lines.length && /^>\s?/.test(lines[i])) { bq.push(lines[i].replace(/^>\s?/, '')); i++; } out += '<blockquote>' + mdInline(bq.join(' ')) + '</blockquote>'; continue; }
+      if (/^\s*[-*]\s+/.test(line)) { var ul = []; while (i < lines.length && /^\s*[-*]\s+/.test(lines[i])) { ul.push(lines[i].replace(/^\s*[-*]\s+/, '')); i++; } out += '<ul>' + ul.map(function (b) { return '<li>' + mdInline(b) + '</li>'; }).join('') + '</ul>'; continue; }
+      if (/^\s*\d+\.\s+/.test(line)) { var ol = []; while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) { ol.push(lines[i].replace(/^\s*\d+\.\s+/, '')); i++; } out += '<ol>' + ol.map(function (b) { return '<li>' + mdInline(b) + '</li>'; }).join('') + '</ol>'; continue; }
+      if (line.trim() === '') { i++; continue; }
+      var p = [line]; i++;
+      while (i < lines.length && lines[i].trim() !== '' && !isBlockStart(lines[i])) { p.push(lines[i]); i++; }
+      out += '<p>' + mdInline(p.join(' ')) + '</p>';
+    }
+    return out;
+  }
+
   /* ---------------- renderers ---------------- */
   var R = {};
 
@@ -308,6 +355,20 @@
 
     if (frames.length) render(0);
     else caption.textContent = 'No steps were recorded.';
+
+    // Render the embedded problem README (the full write-up) below the player.
+    function attachReadme() {
+      var src = document.getElementById('vz-readme');
+      if (!src || !src.textContent.trim()) return;
+      var sec = el('div', 'vz-readme');
+      sec.innerHTML =
+        '<hr class="vz-md-sep">' +
+        '<div class="vz-readme-label">📖 Full write-up — from this problem’s README</div>' +
+        mdToHtml(src.textContent);
+      app.appendChild(sec);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', attachReadme);
+    else attachReadme();
   }
 
   window.Viz = { create: function (cfg) { new Player(cfg); } };
