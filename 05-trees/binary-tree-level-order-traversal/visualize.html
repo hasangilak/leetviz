@@ -45,7 +45,9 @@ Viz.create({
         else if (visited[n.v]) state = "visited";
         return { label: n.v, state: state, children: [mk(n.l), mk(n.r)] };
       };
-      rec.step({ line: line, type: "tree", root: mk(root), note: note, aux: { levels: JSON.stringify(result) } });
+      var fvals = (frontier || []).map(function (n) { return n.v; });
+      rec.step({ line: line, type: "tree", root: mk(root), note: note,
+        aux: { frontier: "[" + fvals.join(", ") + "]", result: JSON.stringify(result) } });
     }
     var result = [];
     snapshot(2, "BFS visits nodes nearest the root first. We process the tree one frontier (level) at a time, collecting their values.", [], result);

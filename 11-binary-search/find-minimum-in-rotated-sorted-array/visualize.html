@@ -31,19 +31,20 @@ Viz.create({
     var nums = [4, 5, 6, 7, 0, 1, 2];
     var lo = 0, hi = nums.length - 1;
     var range = function (a, b) { var r = []; for (var i = a; i <= b; i++) r.push(i); return r; };
-    rec.step({ line: 2, type: "array", values: nums, pointers: { lo: lo, hi: hi }, note: "The min is the inflection point. Compare nums[mid] to nums[hi] to find which half holds the drop." });
+    var win = function (m) { return { lo: lo, mid: (m === undefined ? "—" : m), hi: hi, "nums[mid]": (m === undefined ? "—" : nums[m]), "nums[hi]": nums[hi] }; };
+    rec.step({ line: 2, type: "array", values: nums, pointers: { lo: lo, hi: hi }, note: "The min is the inflection point. Compare nums[mid] to nums[hi] to find which half holds the drop.", aux: win() });
     while (lo < hi) {
       var mid = (lo + hi) >>> 1;
-      rec.step({ line: 4, type: "array", values: nums, pointers: { lo: lo, mid: mid, hi: hi }, hi: [mid], note: "mid = (" + lo + " + " + hi + ") >>> 1 = " + mid + "  →  nums[mid] = " + nums[mid] + ", nums[hi] = " + nums[hi] });
+      rec.step({ line: 4, type: "array", values: nums, pointers: { lo: lo, mid: mid, hi: hi }, hi: [mid], note: "mid = (" + lo + " + " + hi + ") >>> 1 = " + mid + "  →  nums[mid] = " + nums[mid] + ", nums[hi] = " + nums[hi], aux: win(mid) });
       if (nums[mid] > nums[hi]) {
-        rec.step({ line: 5, type: "array", values: nums, pointers: { lo: lo, mid: mid, hi: hi }, hi: [mid], dim: range(lo, mid), note: "nums[mid] " + nums[mid] + " > nums[hi] " + nums[hi] + " — the drop is to the RIGHT of mid. Discard lo..mid; lo = " + (mid + 1) + "." });
+        rec.step({ line: 5, type: "array", values: nums, pointers: { lo: lo, mid: mid, hi: hi }, hi: [mid], dim: range(lo, mid), note: "nums[mid] " + nums[mid] + " > nums[hi] " + nums[hi] + " — the drop is to the RIGHT of mid. Discard lo..mid; lo = " + (mid + 1) + ".", aux: win(mid) });
         lo = mid + 1;
       } else {
-        rec.step({ line: 7, type: "array", values: nums, pointers: { lo: lo, mid: mid, hi: hi }, hi: [mid], dim: range(mid + 1, hi), note: "nums[mid] " + nums[mid] + " ≤ nums[hi] " + nums[hi] + " — mid..hi is sorted, so min is at mid or left. Discard (mid..hi]; hi = " + mid + "." });
+        rec.step({ line: 7, type: "array", values: nums, pointers: { lo: lo, mid: mid, hi: hi }, hi: [mid], dim: range(mid + 1, hi), note: "nums[mid] " + nums[mid] + " ≤ nums[hi] " + nums[hi] + " — mid..hi is sorted, so min is at mid or left. Discard (mid..hi]; hi = " + mid + ".", aux: win(mid) });
         hi = mid;
       }
     }
-    rec.step({ line: 10, type: "array", values: nums, pointers: { lo: lo }, hi: [lo], note: "lo == hi — the minimum is nums[" + lo + "] = " + nums[lo] + ".", aux: { answer: nums[lo] } });
+    rec.step({ line: 10, type: "array", values: nums, pointers: { lo: lo }, hi: [lo], note: "lo == hi — the minimum is nums[" + lo + "] = " + nums[lo] + ".", aux: { lo: lo, hi: hi, answer: nums[lo] } });
   }
 });
 </script>

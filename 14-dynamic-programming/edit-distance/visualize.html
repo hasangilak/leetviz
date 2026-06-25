@@ -47,7 +47,14 @@ Viz.create({
           cur: { r: r, c: c }, hi: [{ r: r - 1, c: c }, { r: r, c: c - 1 }, { r: r - 1, c: c - 1 }],
           note: match
             ? ("'" + a[r - 1] + "' = '" + b[c - 1] + "' → free, copy the diagonal ↖ = " + dp[r][c])
-            : ("'" + a[r - 1] + "' ≠ '" + b[c - 1] + "' → 1 + min( ↑" + dp[r - 1][c] + " delete, ←" + dp[r][c - 1] + " insert, ↖" + dp[r - 1][c - 1] + " replace ) = " + dp[r][c])
+            : ("'" + a[r - 1] + "' ≠ '" + b[c - 1] + "' → 1 + min( ↑" + dp[r - 1][c] + " delete, ←" + dp[r][c - 1] + " insert, ↖" + dp[r - 1][c - 1] + " replace ) = " + dp[r][c]),
+          aux: {
+            "i, j": r + ", " + c,
+            "↑ delete": dp[r - 1][c],
+            "← insert": dp[r][c - 1],
+            "↖ replace": dp[r - 1][c - 1],
+            "dp[i][j]": dp[r][c]
+          }
         });
       }
     }

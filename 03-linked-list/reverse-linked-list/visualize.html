@@ -33,16 +33,16 @@ Viz.create({
     var arrows = function () { return nodes.map(function (n) { return { from: n.id, to: next[n.id] }; }); };
     var label = function (id) { return id == null ? "null" : String(vals[id]); };
     var prev = null, curr = 0;
-    rec.step({ line: 2, type: "list", nodes: nodes, arrows: arrows(), pointers: { prev: prev, curr: curr }, note: "prev = null, curr = head (1). Arrows point forward." });
+    rec.step({ line: 2, type: "list", nodes: nodes, arrows: arrows(), pointers: { prev: prev, curr: curr }, note: "prev = null, curr = head (1). Arrows point forward.", aux: { prev: label(prev), curr: label(curr), next: "—" } });
     while (curr !== null) {
       var nxt = next[curr];
-      rec.step({ line: 4, type: "list", nodes: nodes, arrows: arrows(), pointers: { prev: prev, curr: curr, next: nxt }, note: "Save next = " + label(nxt) + " BEFORE we overwrite curr.next (or we'd lose the rest of the list)." });
+      rec.step({ line: 4, type: "list", nodes: nodes, arrows: arrows(), pointers: { prev: prev, curr: curr, next: nxt }, note: "Save next = " + label(nxt) + " BEFORE we overwrite curr.next (or we'd lose the rest of the list).", aux: { prev: label(prev), curr: label(curr), next: label(nxt) } });
       next[curr] = prev;
-      rec.step({ line: 5, type: "list", nodes: nodes, arrows: arrows(), pointers: { prev: prev, curr: curr, next: nxt }, note: "Flip it: " + label(curr) + ".next now points back to " + label(prev) + "." });
+      rec.step({ line: 5, type: "list", nodes: nodes, arrows: arrows(), pointers: { prev: prev, curr: curr, next: nxt }, note: "Flip it: " + label(curr) + ".next now points back to " + label(prev) + ".", aux: { prev: label(prev), curr: label(curr), next: label(nxt) } });
       prev = curr; curr = nxt;
-      rec.step({ line: 6, type: "list", nodes: nodes, arrows: arrows(), pointers: { prev: prev, curr: curr }, note: "Advance both: prev = " + label(prev) + ", curr = " + label(curr) + "." });
+      rec.step({ line: 6, type: "list", nodes: nodes, arrows: arrows(), pointers: { prev: prev, curr: curr }, note: "Advance both: prev = " + label(prev) + ", curr = " + label(curr) + ".", aux: { prev: label(prev), curr: label(curr), next: label(nxt) } });
     }
-    rec.step({ line: 9, type: "list", nodes: nodes, arrows: arrows(), pointers: { head: prev }, note: "curr is null, so we're done. New head = " + label(prev) + " — the list is reversed." });
+    rec.step({ line: 9, type: "list", nodes: nodes, arrows: arrows(), pointers: { head: prev }, note: "curr is null, so we're done. New head = " + label(prev) + " — the list is reversed.", aux: { prev: label(prev), curr: label(curr), head: label(prev) } });
   }
 });
 </script>

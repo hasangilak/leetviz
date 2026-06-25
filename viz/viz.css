@@ -67,12 +67,19 @@ body {
 .vz-code-txt { color: var(--text); flex: 1 1 auto; min-width: 0; white-space: pre-wrap; word-break: break-word; }
 .vz-line.active .vz-code-txt { color: #fff; }
 
-/* aux chips + caption */
-.vz-aux { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; min-height: 0; }
-.vz-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 13px; }
-.vz-chipk { color: var(--muted); font-family: var(--mono); }
-.vz-chipv { color: var(--text); font-family: var(--mono); font-weight: 600; }
+/* caption */
 .vz-caption { margin-top: 14px; min-height: 44px; background: var(--panel); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 6px; padding: 10px 14px; font-size: 14px; }
+
+/* variables / watch panel — tracks each step's values, flashes what changed */
+.vz-vars { margin-top: 14px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.vz-vars-label { color: var(--muted); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 8px; }
+.vz-vars-rows { display: flex; flex-direction: column; gap: 3px; }
+.vz-var { display: flex; align-items: baseline; gap: 10px; padding: 3px 8px; border-radius: 5px; border-left: 2px solid transparent; }
+.vz-var-k { color: var(--accent); font-family: var(--mono); font-size: 12.5px; font-weight: 600; flex: none; min-width: 92px; }
+.vz-var-v { color: var(--text); font-family: var(--mono); font-size: 12.5px; white-space: pre-wrap; word-break: break-word; min-width: 0; }
+.vz-var.changed { border-left-color: var(--hi); animation: vzvarflash 1.1s ease-out; }
+.vz-var-v.changed { color: var(--hi); font-weight: 700; }
+@keyframes vzvarflash { 0% { background: var(--hi-bg); } 100% { background: transparent; } }
 
 /* controls */
 .vz-ctl { display: flex; align-items: center; gap: 10px; margin-top: 18px; flex-wrap: wrap; }

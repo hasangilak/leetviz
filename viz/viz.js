@@ -8,7 +8,9 @@
  *   { line, note, aux, type, ...rendererFields }
  *     line  : 1-based line in `code` to highlight
  *     note  : caption text for this step
- *     aux   : { label: value, ... } shown as chips
+ *     aux   : { name: value, ... } tracked in the "Variables" panel; any value
+ *             that differs from the previous step is flashed/highlighted so the
+ *             reader can follow how each variable changes. (`vars` is an alias.)
  *     type  : 'array' | 'bars' | 'grid' | 'list' | 'tree'  (+ that type's fields)
  */
 (function () {
@@ -278,9 +280,12 @@
     var main = el('div', 'vz-main');
     var sw = el('div', 'vz-stagewrap');
     var stage = el('div', 'vz-stage');
-    var aux = el('div', 'vz-aux');
     var caption = el('div', 'vz-caption');
-    sw.appendChild(stage); sw.appendChild(aux); sw.appendChild(caption);
+    var varsPanel = el('div', 'vz-vars');
+    varsPanel.appendChild(el('div', 'vz-vars-label', 'Variables'));
+    var varsRows = el('div', 'vz-vars-rows');
+    varsPanel.appendChild(varsRows);
+    sw.appendChild(stage); sw.appendChild(caption); sw.appendChild(varsPanel);
     main.appendChild(sw);
 
     var codeBox = el('div', 'vz-code');
@@ -317,14 +322,23 @@
       var f = frames[cur] || {};
       stage.innerHTML = '';
       (R[f.type] || R.array)(f, stage);
-      aux.innerHTML = '';
-      if (f.aux) {
-        Object.keys(f.aux).forEach(function (k) {
-          var chip = el('span', 'vz-chip');
-          chip.appendChild(el('span', 'vz-chipk', k));
-          chip.appendChild(el('span', 'vz-chipv', String(f.aux[k])));
-          aux.appendChild(chip);
+      // Variables panel: stable rows, flash whatever changed since the prev step.
+      var vars = f.vars || f.aux;
+      var prevVars = (cur > 0 && frames[cur - 1]) ? (frames[cur - 1].vars || frames[cur - 1].aux || {}) : null;
+      varsRows.innerHTML = '';
+      if (vars && Object.keys(vars).length) {
+        varsPanel.style.display = '';
+        Object.keys(vars).forEach(function (k) {
+          var row = el('div', 'vz-var');
+          var vEl = el('span', 'vz-var-v', String(vars[k]));
+          var changed = prevVars && (!(k in prevVars) || String(prevVars[k]) !== String(vars[k]));
+          if (changed) { row.classList.add('changed'); vEl.classList.add('changed'); }
+          row.appendChild(el('span', 'vz-var-k', k));
+          row.appendChild(vEl);
+          varsRows.appendChild(row);
         });
+      } else {
+        varsPanel.style.display = 'none';
       }
       caption.textContent = f.note || '';
       lineEls.forEach(function (d, idx) { d.classList.toggle('active', f.line === idx + 1); });

@@ -42,6 +42,7 @@ Viz.create({
     rec.step({
       line: 4, type: "list", nodes: nodes, arrows: arrows(),
       pointers: { fast: fast, slow: slow }, hi: [slow],
+      aux: { fast: label(fast), slow: label(slow), gap: fast - slow, n: n },
       note: "A dummy 'd' sits before the head so removing the real head is not a special case. fast & slow both start at dummy."
     });
 
@@ -51,6 +52,7 @@ Viz.create({
       rec.step({
         line: 5, type: "list", nodes: nodes, arrows: arrows(),
         pointers: { fast: fast, slow: slow }, hi: [fast],
+        aux: { fast: label(fast), slow: label(slow), gap: fast - slow, n: n },
         note: "Phase 1 (open the gap): fast advances to " + label(fast) + ". After this loop fast is n=" + n + " nodes ahead of slow."
       });
     }
@@ -62,6 +64,7 @@ Viz.create({
       rec.step({
         line: 7, type: "list", nodes: nodes, arrows: arrows(),
         pointers: { fast: fast, slow: slow }, hi: [slow],
+        aux: { fast: label(fast), slow: label(slow), gap: fast - slow, n: n },
         note: "Phase 2 (move together): fast → " + label(fast) + ", slow → " + label(slow) + ". The n-gap stays fixed."
       });
     }
@@ -69,6 +72,7 @@ Viz.create({
     rec.step({
       line: 9, type: "list", nodes: nodes, arrows: arrows(),
       pointers: { fast: fast, slow: slow }, hi: [next[slow]],
+      aux: { fast: label(fast), slow: label(slow), target: label(next[slow]) },
       note: "fast is the last node, so slow (" + label(slow) + ") sits exactly one node BEFORE the target " + label(next[slow]) + "."
     });
 
@@ -78,13 +82,14 @@ Viz.create({
     rec.step({
       line: 10, type: "list", nodes: nodes, arrows: arrows(),
       pointers: { slow: slow }, hi: [slow],
+      aux: { slow: label(slow), removed: label(removed), "slow.next": label(next[slow]) },
       note: "slow.next = slow.next.next → unlink " + label(removed) + ". " + label(slow) + " now points straight to " + label(next[slow]) + "."
     });
 
     rec.step({
       line: 11, type: "list", nodes: nodes, arrows: arrows(),
       pointers: { head: next[0] },
-      aux: { result: "1,2,3,5" },
+      aux: { removed: label(removed), result: "1,2,3,5" },
       note: "Return dummy.next → [1,2,3,5]. (The skipped node 4 is now unreachable.)"
     });
   }
